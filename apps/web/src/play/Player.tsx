@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createRuntime, type PartRef, type Runtime } from '@snoopery/runtime';
 import type { PuzzleItem, RoomDoc } from '@snoopery/schema';
 import { api, loadRoom, type LeaderRow } from '../lib/api';
-import { formatTime, hint, newGame, openPart, tryExit, type Game } from './game';
+import { formatTime, hint, looseItems, newGame, openPart, takeLoose, tryExit, type Game } from './game';
 
 type Toast = { id: number; text: string; tone?: 'info' | 'warn' | 'good' };
 type Modal = { kind: 'keypad'; ref: PartRef; label: string } | { kind: 'clue'; item: PuzzleItem } | { kind: 'win' } | null;
@@ -86,22 +86,25 @@ export function Player({ id }: { id: string }) {
 
   useEffect(() => {
     if (!room || !host.current) return;
+    let alive = true;
     const runtime = createRuntime(host.current, {
-      onProgress: (f) => setProgress(f),
+      onProgress: (f) => alive && setProgress(f),
       onHover: (ref) => {
         setHover(ref);
         runtime.highlight(ref);
         host.current!.style.cursor = ref ? 'pointer' : 'grab';
       },
       onTap: (ref, floor) => {
+        if (!alive) return;
         if (ref) void interactRef.current(ref);
         else if (floor) runtime.controls.glideTo(floor[0], floor[2]);
       },
     });
     rt.current = runtime;
-    runtime.loadRoom(room).catch((e) => setError(`Could not load the 3D room: ${e.message ?? e}`));
+    runtime.loadRoom(room).catch((e) => alive && setError(`Could not load the 3D room: ${e.message ?? e}`));
     (window as unknown as { snoopery?: unknown }).snoopery = runtime;
     return () => {
+      alive = false;
       runtime.dispose();
       rt.current = null;
     };
@@ -117,6 +120,11 @@ export function Player({ id }: { id: string }) {
     const next = hint(room, game);
     if (!next) return;
     setGame((g) => ({ ...g, hints: g.hints + 1 }));
+    if (next.type === 'take') {
+      const it = room.puzzle.items.find((i) => i.id === next.item);
+      if (it) toast(`Something is lying in plain sight: ${it.label}.`);
+      return;
+    }
     if (next.type === 'exit') {
       toast('You have what you need. Try the door.', 'good');
       return;
@@ -193,6 +201,25 @@ export function Player({ id }: { id: string }) {
             </div>
           </header>
           {hover && <div className="sn-hover-label">{hover.part.replace(/_/g, ' ')}</div>}
+          {looseItems(room, game).length > 0 && (
+            <div className="sn-loose">
+              <span>In plain sight</span>
+              {looseItems(room, game).map((it) => (
+                <button
+                  key={it.id}
+                  onClick={() => {
+                    const next = takeLoose(room, game, it.id);
+                    setGame(next);
+                    gameRef.current = next;
+                    toast(`Picked up: ${it.label}`, 'good');
+                    if (it.kind === 'clue' && it.text) setModal({ kind: 'clue', item: it });
+                  }}
+                >
+                  {it.label}
+                </button>
+              ))}
+            </div>
+          )}
           <footer className="sn-tray">
             {inventory.length === 0 ? (
               <span className="sn-tray-empty">Your pockets are empty. Open things.</span>

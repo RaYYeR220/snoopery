@@ -60,6 +60,7 @@ input { font: inherit; color: var(--fg); background: rgba(255,255,255,0.04); bor
 
 /* studio */
 .sn-studio { min-height: 100%; display: flex; flex-direction: column; }
+.sn-place-panel { overflow-y: auto; }
 .sn-studio-nav { display: flex; align-items: center; gap: 16px; padding: 14px 20px; border-bottom: 1px solid var(--line); }
 .sn-studio-nav ol { display: flex; gap: 6px; list-style: none; margin: 0 auto; padding: 0; }
 .sn-studio-nav button.is-on, .sn-tile.is-on, .sn-seg button.is-on, .sn-place-list button.is-on { border-color: var(--accent); color: var(--accent); }
@@ -90,8 +91,9 @@ input { font: inherit; color: var(--fg); background: rgba(255,255,255,0.04); bor
 .sn-step-time { font-variant-numeric: tabular-nums; font-size: 12px; }
 @keyframes sn-pulse { 50% { opacity: .35; } }
 .sn-actions { display: flex; justify-content: flex-end; }
-.sn-place { position: relative; flex: 1; display: grid; grid-template-columns: 1fr 300px; min-height: 0; }
-.sn-place-view { position: relative; min-height: 70vh; }
+.sn-place { position: relative; height: calc(100vh - 57px); display: grid; grid-template-columns: minmax(0, 1fr) 300px; min-height: 0; }
+.sn-place-view { position: relative; min-height: 0; height: 100%; overflow: hidden; }
+.sn-place-view canvas, .sn-viewport canvas { position: absolute; inset: 0; }
 .sn-place-panel { border-left: 1px solid var(--line); padding: 18px; display: grid; gap: 14px; align-content: start; }
 .sn-place-panel h3 { margin: 0; font-weight: 500; }
 .sn-place-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
@@ -108,4 +110,8 @@ input { font: inherit; color: var(--fg); background: rgba(255,255,255,0.04); bor
 .sn-chain { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 14px; }
 .sn-published { display: flex; gap: 10px; align-items: center; }
 .sn-published a { color: var(--accent); }
-@media (max-width: 860px) { .sn-place { grid-template-columns: 1fr; } .sn-place-panel { border-left: 0; border-top: 1px solid var(--line); } }
+@media (max-width: 860px) { .sn-place { grid-template-columns: 1fr; grid-template-rows: 60vh auto; height: auto; } .sn-place-panel { border-left: 0; border-top: 1px solid var(--line); } }
+
+.sn-loose { position: absolute; left: 18px; top: 74px; display: grid; gap: 6px; justify-items: start; }
+.sn-loose span { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.sn-loose button { background: var(--panel); backdrop-filter: blur(10px); font-size: 13px; }

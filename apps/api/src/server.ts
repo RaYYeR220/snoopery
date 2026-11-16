@@ -68,7 +68,7 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
   const { ctx } = deps;
   // One proxy hop (Cloud Run's front end) so rate limits key on the real client address.
   const app = Fastify({ logger: false, bodyLimit: 2 * 1024 * 1024, trustProxy: (_address: string, hop: number) => hop < 1 });
-  await app.register(cors, { origin: true, allowedHeaders: ['content-type', 'x-edit-token', 'x-tick-token'] });
+  await app.register(cors, { origin: true, methods: ['GET', 'HEAD', 'POST', 'PUT', 'OPTIONS'], allowedHeaders: ['content-type', 'x-edit-token', 'x-tick-token'] });
   await app.register(rateLimit, { max: 120, timeWindow: '1 minute' });
   const costly = { config: { rateLimit: { max: 12, timeWindow: '1 hour' } } };
   const designLimit = { config: { rateLimit: { max: 30, timeWindow: '1 hour' } } };

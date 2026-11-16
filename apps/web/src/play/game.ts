@@ -43,6 +43,8 @@ export function openPart(room: RoomDoc, g: Game, objectId: string, part: string,
       // A correct code opens the lock even if the clue was never picked up: knowing the code is what counts.
       if (lock.kind === 'code' && typedCode === lock.code) {
         next = { ...state, opened: [...state.opened, c.id] };
+        // Knowing the code stands in for reading each clue the solver counted.
+        steps += lock.clueIds.filter((id) => !state.inventory.includes(id)).length;
       } else {
         const ids = lock.kind === 'key' ? [lock.keyId] : lock.kind === 'code' ? lock.clueIds : [];
         const missing = ids.filter((id) => !state.inventory.includes(id)).map((id) => byId(p, id)!).filter(Boolean);
@@ -66,6 +68,14 @@ export function openPart(room: RoomDoc, g: Game, objectId: string, part: string,
   return { game: { ...g, state, steps }, outcome: { kind: 'opened', container: c, found } };
 }
 
+/** Items lying in plain sight (not hidden in any part) that are still in the room. */
+export const looseItems = (room: RoomDoc, g: Game) => room.puzzle.items.filter((i) => i.inside === null && !g.state.inventory.includes(i.id));
+
+export function takeLoose(room: RoomDoc, g: Game, itemId: string): Game {
+  const r = reduce(room.puzzle, g.state, { type: 'take', item: itemId });
+  return 'rejected' in r ? g : { ...g, state: r, steps: g.steps + 1 };
+}
+
 export function tryExit(room: RoomDoc, g: Game): { game: Game; outcome: Outcome } {
   const r = reduce(room.puzzle, g.state, { type: 'exit' });
   if ('rejected' in r) {
@@ -79,7 +89,9 @@ export function tryExit(room: RoomDoc, g: Game): { game: Game; outcome: Outcome 
 /** Next useful action from the current state, re-solved live (never the stored proof). */
 export function hint(room: RoomDoc, g: Game): Action | null {
   const plan = solve(room.puzzle, g.state);
-  return plan?.find((a) => a.type !== 'take') ?? plan?.[0] ?? null;
+  if (!plan) return null;
+  // A take of something in plain sight is a real next step; takes from containers happen on opening.
+  return plan.find((a) => a.type !== 'take' || room.puzzle.items.find((i) => i.id === a.item)?.inside === null) ?? null;
 }
 
 export function lockedCodeFor(room: RoomDoc, objectId: string, part: string): string | null {

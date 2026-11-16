@@ -215,6 +215,7 @@ export function createRuntime(container: HTMLElement, events: RuntimeEvents = {}
     const buf = await (await fetch(o.glbUrl)).arrayBuffer();
     const res = await GLTFLoader.loadGLTF(buf, { textureLoader: downloadTexture as never });
     const root = new Object3D();
+    if (disposed) return root;
     const model = res.scene as unknown as Object3D;
     root.add(model);
     root.position.set(o.position[0], o.position[1], o.position[2]);
@@ -320,6 +321,7 @@ export function createRuntime(container: HTMLElement, events: RuntimeEvents = {}
   async function loadSpace(splatSpec: RoomDoc['splat'], spawn: RoomDoc['spawn']) {
     const data = await SplatLoader.parseSplatData(formatOf(splatSpec.format), splatSpec.url, SplatLoader.SplatPackType.Compressed);
     const splat = (await SplatUtils.createSplat(data)) as unknown as Object3D;
+    if (disposed) return;
     new Matrix4().fromArray(splatSpec.transform).decompose(splat.position, splat.quaternion, splat.scale);
     splat.updateMatrixWorld(true);
     scene.add(splat);

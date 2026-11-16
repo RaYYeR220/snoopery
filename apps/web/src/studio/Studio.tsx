@@ -225,14 +225,21 @@ function PlaceStep({ draft, space, chosen, objects, onSave, onNext }: { draft: D
   const [placements, setPlacements] = useState<Placement[]>(draft.placements);
   const [selected, setSelected] = useState<string | null>(chosen.find((id) => !draft.placements.some((p) => p.objectId === id)) ?? null);
   const [transform, setTransform] = useState(draft.splatTransform);
-  const [ready, setReady] = useState(false);
+  const [ready, setReadyState] = useState(false);
+  const readyRef = useRef(false);
+  const setReady = (v: boolean) => {
+    readyRef.current = v;
+    setReadyState(v);
+  };
   const stateRef = useRef({ placements, selected });
   stateRef.current = { placements, selected };
 
   useEffect(() => {
     if (!host.current) return;
+    let alive = true;
     const runtime = createRuntime(host.current, {
       onTap: (part, floor) => {
+        if (!alive || !readyRef.current) return;
         const { placements: ps, selected: sel } = stateRef.current;
         if (part) {
           setSelected(part.objectId);
@@ -242,7 +249,7 @@ function PlaceStep({ draft, space, chosen, objects, onSave, onNext }: { draft: D
         const o = objects.get(sel);
         if (!o?.webGlb) return;
         const existing = ps.find((p) => p.objectId === sel);
-        const position: Vec3 = [floor[0], runtime.floorY(), floor[2]];
+        const position: Vec3 = [floor[0], runtime.groundAt(floor[0], floor[2]), floor[2]];
         if (existing) {
           runtime.updateObject(sel, { position });
           setPlacements(ps.map((p) => (p.objectId === sel ? { ...p, position } : p)));
@@ -255,16 +262,20 @@ function PlaceStep({ draft, space, chosen, objects, onSave, onNext }: { draft: D
       onHover: (ref) => runtime.highlight(ref),
     });
     rt.current = runtime;
+    (window as unknown as { snooperyStudio?: Runtime }).snooperyStudio = runtime;
     runtime
       .loadSpace({ url: space.splatUrl, format: space.format, transform: draft.splatTransform }, draft.spawn)
       .then(async () => {
         for (const p of draft.placements) {
           const o = objects.get(p.objectId);
-          if (o?.webGlb) await runtime.addObject({ ...p, glbUrl: o.webGlb, joints: o.joints ?? [] });
+          if (alive && o?.webGlb) await runtime.addObject({ ...p, glbUrl: o.webGlb, joints: o.joints ?? [] });
         }
-        setReady(true);
+        if (alive) setReady(true);
       });
-    return () => runtime.dispose();
+    return () => {
+      alive = false;
+      runtime.dispose();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -282,10 +293,14 @@ function PlaceStep({ draft, space, chosen, objects, onSave, onNext }: { draft: D
     patch(sel.objectId, { cutout: { center: [sel.position[0], sel.position[1] + size[1] / 2, sel.position[2]], size: [size[0] * 1.1, size[1] * 1.05, size[2] * 1.1] } });
   };
 
+  const [saveError, setSaveError] = useState<string | null>(null);
   const save = async () => {
-    const pose = rt.current!.pose();
-    await onSave({ ...draft, placements, splatTransform: transform, spawn: draft.spawn ?? pose });
-    onNext();
+    try {
+      await onSave({ ...draft, placements, splatTransform: transform, spawn: draft.spawn ?? rt.current!.pose() });
+      onNext();
+    } catch (e) {
+      setSaveError(`Could not save the room: ${(e as Error).message}`);
+    }
   };
 
   return (
@@ -335,6 +350,7 @@ function PlaceStep({ draft, space, chosen, objects, onSave, onNext }: { draft: D
           </button>
           <button onClick={() => void onSave({ ...draft, placements, splatTransform: transform, spawn: rt.current!.pose() })}>Start the player here</button>
         </div>
+        {saveError && <div className="sn-warn">{saveError}</div>}
         <button className="sn-primary" disabled={placements.length === 0} onClick={save}>
           Next: hide things
         </button>
