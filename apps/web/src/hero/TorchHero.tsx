@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { loadRoomPoints, TorchScene } from './torch';
+import type { Lang } from '../lib/i18n';
 
 const COPY = {
   en: {
@@ -32,7 +33,6 @@ const COPY = {
   },
 } as const;
 
-export type Lang = keyof typeof COPY;
 
 const LIME: [number, number, number] = [197, 240, 78];
 const GROUND: [number, number, number] = [10, 10, 11];

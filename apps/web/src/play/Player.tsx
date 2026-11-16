@@ -5,6 +5,7 @@ import { createRuntime, type PartRef, type Runtime } from '@snoopery/runtime';
 const DEFAULT_CHARACTER = { modelUrl: 'https://holo-cos.aholo3d.cn/aholo-opensource/gs_file/misc/robot.0765006a.glb' };
 import type { PuzzleItem, RoomDoc } from '@snoopery/schema';
 import { api, API_URL, loadRoom, type LeaderRow } from '../lib/api';
+import { dict, useLang, type Dict } from '../lib/i18n';
 import * as sfx from './sound';
 import { formatTime, hint, looseItems, newGame, openPart, takeLoose, tryExit, type Game } from './game';
 
@@ -27,6 +28,10 @@ export function Player({ id }: { id: string }) {
   const [replaying, setReplaying] = useState(false);
   const [intro, setIntro] = useState(true);
   const [muted, setMutedState] = useState(false);
+  const [lang, setLang] = useLang();
+  const d = dict(lang);
+  const dRef = useRef(d);
+  dRef.current = d;
 
   const toast = useCallback((text: string, tone: Toast['tone'] = 'info') => {
     const t = { id: Math.random(), text, tone };
@@ -66,9 +71,9 @@ export function Player({ id }: { id: string }) {
           motionSound(r, ref);
           await runtime.animateJoint(ref.objectId, ref.part, 1);
           if (outcome.found.length) sfx.pickup();
-          if (outcome.found.length === 0) toast('Empty.');
+          if (outcome.found.length === 0) toast(dRef.current.empty);
           for (const it of outcome.found) {
-            toast(`Found: ${it.label}`, 'good');
+            toast(`${dRef.current.found}: ${it.label}`, 'good');
             if (it.kind === 'clue' && it.text) setModal({ kind: 'clue', item: it });
           }
           break;
@@ -77,7 +82,7 @@ export function Player({ id }: { id: string }) {
           await runtime.animateJoint(ref.objectId, ref.part, 0.06, 140);
           await runtime.animateJoint(ref.objectId, ref.part, 0, 180);
           if (outcome.needs === 'code') setModal({ kind: 'keypad', ref, label: labelOf(r, ref) });
-          else toast(`Locked. It needs a key${outcome.missing[0] ? '' : ''}.`, 'warn');
+          else toast(dRef.current.lockedKey, 'warn');
           break;
         case 'blocked':
           toast(outcome.reason, 'warn');
@@ -145,11 +150,11 @@ export function Player({ id }: { id: string }) {
     setGame((g) => ({ ...g, hints: g.hints + 1 }));
     if (next.type === 'take') {
       const it = room.puzzle.items.find((i) => i.id === next.item);
-      if (it) toast(`Something is lying in plain sight: ${it.label}.`);
+      if (it) toast(`${d.lyingAround}: ${it.label}.`);
       return;
     }
     if (next.type === 'exit') {
-      toast('You have what you need. Try the door.', 'good');
+      toast(d.haveAll, 'good');
       return;
     }
     if (next.type === 'open') {
@@ -157,7 +162,7 @@ export function Player({ id }: { id: string }) {
       const at = rt.current.partPosition(c.objectId, c.part);
       if (at) rt.current.controls.lookAt(at[0], at[1], at[2]);
       rt.current.highlight({ objectId: c.objectId, part: c.part });
-      toast(`Look at the ${c.part.replace(/_/g, ' ')}.`);
+      toast(`${d.lookAt} ${c.part.replace(/_/g, ' ')}.`);
     }
   };
 
@@ -169,7 +174,7 @@ export function Player({ id }: { id: string }) {
       sfx.unlock();
       setModal({ kind: 'win' });
     }
-    else if (outcome.kind === 'exit-locked') toast('The door is locked.', 'warn');
+    else if (outcome.kind === 'exit-locked') toast(d.doorLocked, 'warn');
   };
 
   const replay = async () => {
@@ -218,7 +223,7 @@ export function Player({ id }: { id: string }) {
         } else if (a.type === 'take') {
           const it = room.puzzle.items.find((x) => x.id === a.item);
           if (figure?.has('pickup')) figure.play('pickup');
-          if (it) toast(`Takes: ${it.label}`, 'good');
+          if (it) toast(`${d.takes}: ${it.label}`, 'good');
           sfx.pickup();
           await wait(800);
           figure?.play('idle');
@@ -226,7 +231,7 @@ export function Player({ id }: { id: string }) {
           if (figure) await figure.walkTo(fx, fz);
           figure?.play(figure.has('cheer') ? 'cheer' : 'idle');
           sfx.unlock();
-          toast('Out the door.', 'good');
+          toast(d.outDoor, 'good');
           await wait(1200);
         }
       }
@@ -248,7 +253,7 @@ export function Player({ id }: { id: string }) {
       {progress < 1 && (
         <div className="sn-loading">
           <div className="sn-loading-bar" style={{ transform: `scaleX(${progress})` }} />
-          <span>Loading the room… {Math.round(progress * 100)}%</span>
+          <span>{d.loading} {Math.round(progress * 100)}%</span>
         </div>
       )}
       {room && (
@@ -257,7 +262,7 @@ export function Player({ id }: { id: string }) {
             <div>
               <div className="sn-room-title">{room.title}</div>
               <div className="sn-room-meta">
-                {formatTime(elapsed)} · {game.steps} steps · shortest {room.verdict.minSteps}
+                {formatTime(elapsed)} · {game.steps} {d.steps} · {d.shortest} {room.verdict.minSteps}
               </div>
             </div>
             <div className="sn-hud-actions">
@@ -268,17 +273,18 @@ export function Player({ id }: { id: string }) {
                   setMutedState(!muted);
                 }}
               >
-                {muted ? 'Sound off' : 'Sound on'}
+                {muted ? d.soundOff : d.soundOn}
               </button>
-              <button onClick={onHint} disabled={replaying}>Hint</button>
-              <button onClick={replay} disabled={replaying}>Watch the solution</button>
-              <button className="sn-primary" onClick={onExit} disabled={replaying}>Try the door</button>
+              <button onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}>{lang === 'en' ? '中文' : 'EN'}</button>
+              <button onClick={onHint} disabled={replaying}>{d.hint}</button>
+              <button onClick={replay} disabled={replaying}>{d.watch}</button>
+              <button className="sn-primary" onClick={onExit} disabled={replaying}>{d.door}</button>
             </div>
           </header>
           {hover && <div className="sn-hover-label">{hover.part.replace(/_/g, ' ')}</div>}
           {looseItems(room, game).length > 0 && (
             <div className="sn-loose">
-              <span>In plain sight</span>
+              <span>{d.plainSight}</span>
               {looseItems(room, game).map((it) => (
                 <button
                   key={it.id}
@@ -286,7 +292,7 @@ export function Player({ id }: { id: string }) {
                     const next = takeLoose(room, game, it.id);
                     setGame(next);
                     gameRef.current = next;
-                    toast(`Picked up: ${it.label}`, 'good');
+                    toast(`${d.picked}: ${it.label}`, 'good');
                     sfx.pickup();
                     if (it.kind === 'clue' && it.text) setModal({ kind: 'clue', item: it });
                   }}
@@ -298,7 +304,7 @@ export function Player({ id }: { id: string }) {
           )}
           <footer className="sn-tray">
             {inventory.length === 0 ? (
-              <span className="sn-tray-empty">Your pockets are empty. Open things.</span>
+              <span className="sn-tray-empty">{d.pockets}</span>
             ) : (
               inventory.map((it) => (
                 <button key={it.id} className={`sn-item sn-item-${it.kind}`} onClick={() => it.kind === 'clue' && setModal({ kind: 'clue', item: it })}>
@@ -319,42 +325,42 @@ export function Player({ id }: { id: string }) {
       {room && intro && progress >= 1 && (
         <div className="sn-modal" onClick={startPlay}>
           <div className="sn-card sn-intro" onClick={(e) => e.stopPropagation()}>
-            <div className="sn-card-kicker">{room.author ? `${room.author}'s room` : 'Someone’s room'}</div>
+            <div className="sn-card-kicker">{room.author ? d.whose(room.author) : d.someones}</div>
             <h2>{room.title}</h2>
             {room.intro && <p>{room.intro}</p>}
             <ul className="sn-howto">
-              <li>Drag to look around · click the floor (or WASD) to walk</li>
-              <li>Click drawers, lids and doors — they really open</li>
-              <li>Find what you need, then try the door</li>
+              {d.howto.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
             </ul>
-            <p className="sn-muted">The way out is proven: the shortest escape takes {room.verdict.minSteps} steps.</p>
+            <p className="sn-muted">{d.proven(room.verdict.minSteps)}</p>
             <button className="sn-primary" onClick={startPlay}>
-              Start snooping
+              {d.start}
             </button>
           </div>
         </div>
       )}
-      {modal?.kind === 'keypad' && <Keypad label={modal.label} onClose={() => setModal(null)} onSubmit={(code) => void interact(modal.ref, code).then(() => undefined)} />}
+      {modal?.kind === 'keypad' && <Keypad d={d} label={modal.label} onClose={() => setModal(null)} onSubmit={(code) => void interact(modal.ref, code).then(() => undefined)} />}
       {modal?.kind === 'clue' && (
         <div className="sn-modal" onClick={() => setModal(null)}>
           <div className="sn-card" onClick={(e) => e.stopPropagation()}>
             <div className="sn-card-kicker">{modal.item.label}</div>
             <p className="sn-clue">{modal.item.text}</p>
-            <button onClick={() => setModal(null)}>Put it in my pocket</button>
+            <button onClick={() => setModal(null)}>{d.pocket}</button>
           </div>
         </div>
       )}
-      {modal?.kind === 'win' && room && <Win room={room} game={game} />}
+      {modal?.kind === 'win' && room && <Win d={d} room={room} game={game} />}
     </div>
   );
 }
 
-function Keypad({ label, onSubmit, onClose }: { label: string; onSubmit: (code: string) => void; onClose: () => void }) {
+function Keypad({ d, label, onSubmit, onClose }: { d: Dict; label: string; onSubmit: (code: string) => void; onClose: () => void }) {
   const [code, setCode] = useState('');
   return (
     <div className="sn-modal" onClick={onClose}>
       <div className="sn-card sn-keypad" onClick={(e) => e.stopPropagation()}>
-        <div className="sn-card-kicker">The {label} has a code lock</div>
+        <div className="sn-card-kicker">{d.codeLock(label)}</div>
         <div className="sn-code">{code.padEnd(4, '·')}</div>
         <div className="sn-keys">
           {['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', '↵'].map((k) => (
@@ -375,7 +381,7 @@ function Keypad({ label, onSubmit, onClose }: { label: string; onSubmit: (code: 
   );
 }
 
-function Win({ room, game }: { room: RoomDoc; game: Game }) {
+function Win({ d, room, game }: { d: Dict; room: RoomDoc; game: Game }) {
   const [name, setName] = useState('');
   const [board, setBoard] = useState<LeaderRow[] | null>(null);
   const [state, setState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -397,20 +403,18 @@ function Win({ room, game }: { room: RoomDoc; game: Game }) {
   return (
     <div className="sn-modal">
       <div className="sn-card sn-win">
-        <div className="sn-card-kicker">You got out</div>
+        <div className="sn-card-kicker">{d.gotOut}</div>
         <div className="sn-win-time">{formatTime(ms)}</div>
-        <p>
-          {game.steps} steps (the shortest way out is {room.verdict.minSteps}) · {game.hints} hints
-        </p>
+        <p>{d.result(game.steps, room.verdict.minSteps, game.hints)}</p>
         {!local && state !== 'saved' && (
           <div className="sn-row">
-            <input placeholder="Your name" maxLength={24} value={name} onChange={(e) => setName(e.target.value)} />
+            <input placeholder={d.name} maxLength={24} value={name} onChange={(e) => setName(e.target.value)} />
             <button className="sn-primary" onClick={save} disabled={state === 'saving'}>
-              Save my time
+              {d.save}
             </button>
           </div>
         )}
-        {state === 'error' && <p className="sn-warn">Could not save right now.</p>}
+        {state === 'error' && <p className="sn-warn">{d.saveFail}</p>}
         {board && board.length > 0 && (
           <ol className="sn-board">
             {board.map((b, i) => (
@@ -421,10 +425,10 @@ function Win({ room, game }: { room: RoomDoc; game: Game }) {
             ))}
           </ol>
         )}
-        <button onClick={() => navigator.clipboard?.writeText(location.href)}>Copy the link for a friend</button>
+        <button onClick={() => navigator.clipboard?.writeText(location.href)}>{d.copy}</button>
         {!local && (
           <div className="sn-export">
-            <span>Same room as a robot task:</span>
+            <span>{d.asRobot}</span>
             <a href={`${API_URL}/rooms/${encodeURIComponent(room.id)}/export?format=mjcf`}>MuJoCo</a>
             <a href={`${API_URL}/rooms/${encodeURIComponent(room.id)}/export?format=usda`}>USD</a>
             <a href={`${API_URL}/rooms/${encodeURIComponent(room.id)}/export?format=task`}>Task JSON</a>
