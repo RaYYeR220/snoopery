@@ -88,7 +88,7 @@ describe('snoopery MCP server', () => {
   it('export_robot_task writes the MuJoCo bundle into a directory and lists its files', async () => {
     const client = await connect();
     const dir = mkdtempSync(join(tmpdir(), 'snoopery-mcp-'));
-    const room = readFileSync(DEMO, 'utf8');
+    const room = readFileSync(DEMO, 'utf8').replaceAll('http://localhost:5180/dev/', 'https://assets.example.com/dev/');
     const result = await call(client, 'export_robot_task', { room_url_or_json: room, format: 'mjcf', out_path: dir });
     expect(result.isError).toBeFalsy();
     const out = JSON.parse(text(result));
@@ -97,6 +97,15 @@ describe('snoopery MCP server', () => {
     expect(out.files.map((f: { name: string }) => f.name)).toEqual(
       expect.arrayContaining(['scene.xml', 'task.json', 'README.txt', 'meshes/nightstand__top_drawer.obj', 'meshes/jewelry_box__lid.obj']),
     );
+  });
+
+  it('export_robot_task refuses room content that points at local files', async () => {
+    const client = await connect();
+    const dir = mkdtempSync(join(tmpdir(), 'snoopery-mcp-'));
+    const room = readFileSync(DEMO, 'utf8').replaceAll('http://localhost:5180/dev/', 'file:///etc/');
+    const result = await call(client, 'export_robot_task', { room_url_or_json: room, format: 'mjcf', out_path: dir });
+    expect(result.isError).toBe(true);
+    expect(text(result)).toMatch(/https/);
   });
 
   it('make_openable refuses clearly without an Aholo key', async () => {

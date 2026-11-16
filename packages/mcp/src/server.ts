@@ -9,7 +9,7 @@ import { exportRoom, zipListing } from '@snoopery/export';
 import { verify } from '@snoopery/puzzle';
 import type { Action } from '@snoopery/schema';
 import { makeOpenable } from './openable.ts';
-import { loadBytes, loadJson, puzzleFrom, roomFrom } from './sources.ts';
+import { loadJson, loadRemoteAsset, puzzleFrom, roomFrom } from './sources.ts';
 import type { Fetch } from './sources.ts';
 
 export const SERVER_NAME = 'snoopery';
@@ -123,7 +123,7 @@ export function createServer(options: ServerOptions = {}): McpServer {
     ({ room_url_or_json, format, out_path }) =>
       guarded(async () => {
         const room = roomFrom(await loadJson(room_url_or_json, fetchImpl));
-        const zip = await exportRoom(room, (url) => loadBytes(url, fetchImpl), format);
+        const zip = await exportRoom(room, (url) => loadRemoteAsset(url, fetchImpl), format);
         const path = await zipPath(out_path, room.id, format);
         await mkdir(dirname(path), { recursive: true });
         await writeFile(path, zip);
