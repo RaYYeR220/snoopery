@@ -4,6 +4,7 @@ import { Studio } from './studio/Studio';
 import { Docs } from './pages/Docs';
 import { Rooms } from './pages/Rooms';
 import { ObjectInspector } from './pages/ObjectInspector';
+import { Landing } from './pages/Landing';
 
 export function App() {
   return (
@@ -13,13 +14,7 @@ export function App() {
       <Route path="/rooms" component={Rooms} />
       <Route path="/objects/:id">{(p) => <ObjectInspector id={decodeURIComponent(p.id)} />}</Route>
       <Route path="/play/:id">{(p) => <Player id={decodeURIComponent(p.id)} />}</Route>
-      <Route>
-        <main className="sn-fullmsg">
-          <h1>Snoopery</h1>
-          <p>Film your room. Every drawer opens.</p>
-          <a href="/play/dev:demo">Open the test room</a>
-        </main>
-      </Route>
+      <Route>{() => <Landing />}</Route>
     </Switch>
   );
 }
