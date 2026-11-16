@@ -1,0 +1,23 @@
+{
+  "name": "@snoopery/runtime",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "dependencies": {
+    "@snoopery/joints": "workspace:*",
+    "@snoopery/schema": "workspace:*"
+  },
+  "peerDependencies": {
+    "@manycore/aholo-viewer": "1.14.0"
+  },
+  "devDependencies": {
+    "@manycore/aholo-viewer": "1.14.0"
+  }
+}
