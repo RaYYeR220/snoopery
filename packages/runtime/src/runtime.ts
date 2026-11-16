@@ -1,5 +1,6 @@
 import {
   AmbientLight,
+  Animation,
   BackgroundMode,
   Box3,
   Color,
@@ -24,10 +25,21 @@ import { jointMatrix } from '@snoopery/joints/transform';
 import type { Joint, PlacedObject, RoomDoc, Vec3 } from '@snoopery/schema';
 import { LookController, type Bounds, type Pose } from './controls';
 import { loadVoxelCollision, type VoxelCollision } from './voxel';
+import { Character, type CharacterSpec, type ClipRole } from './character';
 
 export interface PartRef {
   objectId: string;
   part: string;
+}
+
+export interface CharacterControl {
+  place(x: number, z: number, yaw?: number): void;
+  walkTo(x: number, z: number): Promise<void>;
+  face(x: number, z: number): void;
+  play(role: ClipRole): void;
+  has(role: ClipRole): boolean;
+  position(): Vec3;
+  show(visible: boolean): void;
 }
 
 export interface RuntimeEvents {
@@ -46,6 +58,8 @@ export interface Runtime {
   removeObject(objectId: string): void;
   /** World-space size of a placed object's bounding box. */
   objectSize(objectId: string): Vec3 | null;
+  /** The figure that acts out a solution. Loads once; later calls reuse it. */
+  character(spec: CharacterSpec): Promise<CharacterControl>;
   floorY(): number;
   /** Floor height under a point (scene collision when available). */
   groundAt(x: number, z: number): number;
@@ -106,6 +120,10 @@ export function createRuntime(container: HTMLElement, events: RuntimeEvents = {}
   scene.add(lights);
 
   const parts = new Map<string, PartState>();
+  const animationPlugin = new Animation.AnimationPlugin();
+  animationPlugin.registerToViewer({ viewer } as never);
+  let figure: Character | null = null;
+  let figureLoad: Promise<Character> | null = null;
   const objectRoots = new Map<string, Object3D>();
   const meshOwner = new Map<Object3D, PartRef>();
   let floorY = 0;
@@ -174,6 +192,7 @@ export function createRuntime(container: HTMLElement, events: RuntimeEvents = {}
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     let dirty = controls.update(dt);
+    if (figure && figure.root.visible && figure.update(dt)) dirty = true;
     for (const tw of tweens) {
       tw.t = Math.min(1, tw.t + (dt * 1000) / tw.dur);
       const k = tw.t < 0.5 ? 4 * tw.t ** 3 : 1 - (-2 * tw.t + 2) ** 3 / 2;
@@ -418,6 +437,28 @@ export function createRuntime(container: HTMLElement, events: RuntimeEvents = {}
       return [box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z];
     },
     floorY: () => floorY,
+    async character(spec) {
+      figureLoad ??= (async () => {
+        const c = new Character(animationPlugin);
+        await c.load(spec);
+        scene.add(c.root);
+        figure = c;
+        return c;
+      })();
+      const c = await figureLoad;
+      return {
+        place: (x, z, yaw) => c.place(x, groundAt(x, z) ?? floorY, z, yaw),
+        walkTo: (x, z) => c.walkTo(x, z),
+        face: (x, z) => c.face(x, z),
+        play: (role) => c.play(role),
+        has: (role) => c.has(role),
+        position: () => c.position(),
+        show: (v) => {
+          c.root.visible = v;
+          forceFrames = Math.max(forceFrames, 2);
+        },
+      };
+    },
     groundAt: (x, z) => groundAt(x, z) ?? floorY,
     setJoint(objectId, part, t) {
       const p = parts.get(`${objectId}.${part}`);

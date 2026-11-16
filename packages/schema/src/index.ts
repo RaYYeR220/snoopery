@@ -94,6 +94,13 @@ export const roomDoc = z.object({
   author: z.string(),
   /** One or two sentences setting the scene for the player. */
   intro: z.string().max(400).optional(),
+  /** The figure that walks the solution: a rigged model and its motions. */
+  character: z
+    .object({
+      modelUrl: z.string().url(),
+      clipUrls: z.record(z.enum(['idle', 'walk', 'open', 'pickup', 'cheer']), z.string().url()).optional(),
+    })
+    .optional(),
   splat: z.object({
     url: z.string().url(),
     format: z.enum(['spz', 'ply', 'sog']),

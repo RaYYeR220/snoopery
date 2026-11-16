@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createRuntime, type PartRef, type Runtime } from '@snoopery/runtime';
+
+/** Aholo's open demo robot (idle / walk); rooms can name their own Lux3D-rigged figure instead. */
+const DEFAULT_CHARACTER = { modelUrl: 'https://holo-cos.aholo3d.cn/aholo-opensource/gs_file/misc/robot.0765006a.glb' };
 import type { PuzzleItem, RoomDoc } from '@snoopery/schema';
 import { api, API_URL, loadRoom, type LeaderRow } from '../lib/api';
 import * as sfx from './sound';
@@ -173,25 +176,65 @@ export function Player({ id }: { id: string }) {
     if (!room || !rt.current || replaying) return;
     setReplaying(true);
     const runtime = rt.current;
+    const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
     for (const p of runtime.parts()) runtime.setJoint(p.objectId, p.part, 0);
-    for (const a of room.proof) {
-      if (a.type === 'open') {
-        const c = room.puzzle.containers.find((x) => x.id === a.target)!;
-        const at = runtime.partPosition(c.objectId, c.part);
-        if (at) runtime.controls.lookAt(at[0], at[1], at[2], 700);
-        runtime.highlight({ objectId: c.objectId, part: c.part });
-        await new Promise((r) => setTimeout(r, 750));
-        await runtime.animateJoint(c.objectId, c.part, 1, 900);
-      } else if (a.type === 'take') {
-        const it = room.puzzle.items.find((x) => x.id === a.item);
-        if (it) toast(`Takes: ${it.label}`, 'good');
-        await new Promise((r) => setTimeout(r, 650));
-      } else {
-        toast('Out the door.', 'good');
-      }
+    let figure: Awaited<ReturnType<Runtime['character']>> | null = null;
+    try {
+      figure = await runtime.character(room.character ?? DEFAULT_CHARACTER);
+    } catch {
+      figure = null;
     }
-    runtime.highlight(null);
-    setReplaying(false);
+    const [sx, , sz] = room.spawn.pos;
+    // Start just ahead and to the right of the viewer, so the walk to each part is in view.
+    const fx = sx - Math.sin(room.spawn.yaw) * 0.6 + Math.cos(room.spawn.yaw) * 0.5;
+    const fz = sz - Math.cos(room.spawn.yaw) * 0.6 - Math.sin(room.spawn.yaw) * 0.5;
+    figure?.place(fx, fz, room.spawn.yaw + Math.PI);
+    figure?.show(true);
+    const follow = setInterval(() => {
+      if (!figure) return;
+      const [x, y, z] = figure.position();
+      runtime.controls.lookAt(x, y + 0.9, z, 280);
+    }, 300);
+    try {
+      for (const a of room.proof) {
+        if (a.type === 'open') {
+          const c = room.puzzle.containers.find((x) => x.id === a.target)!;
+          const at = runtime.partPosition(c.objectId, c.part);
+          if (figure && at) {
+            const [px, py, pz] = figure.position();
+            const dx = px - at[0];
+            const dz = pz - at[2];
+            const d = Math.hypot(dx, dz) || 1;
+            await figure.walkTo(at[0] + (dx / d) * 0.75, at[2] + (dz / d) * 0.75);
+            figure.face(at[0], at[2]);
+            figure.play(figure.has('open') ? 'open' : 'idle');
+            void py;
+          }
+          runtime.highlight({ objectId: c.objectId, part: c.part });
+          await wait(450);
+          motionSound(room, { objectId: c.objectId, part: c.part });
+          await runtime.animateJoint(c.objectId, c.part, 1, 900);
+          figure?.play('idle');
+        } else if (a.type === 'take') {
+          const it = room.puzzle.items.find((x) => x.id === a.item);
+          if (figure?.has('pickup')) figure.play('pickup');
+          if (it) toast(`Takes: ${it.label}`, 'good');
+          sfx.pickup();
+          await wait(800);
+          figure?.play('idle');
+        } else {
+          if (figure) await figure.walkTo(fx, fz);
+          figure?.play(figure.has('cheer') ? 'cheer' : 'idle');
+          sfx.unlock();
+          toast('Out the door.', 'good');
+          await wait(1200);
+        }
+      }
+    } finally {
+      clearInterval(follow);
+      runtime.highlight(null);
+      setReplaying(false);
+    }
   };
 
   if (error) return <div className="sn-fullmsg">{error}</div>;
