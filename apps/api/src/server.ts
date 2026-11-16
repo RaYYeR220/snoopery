@@ -32,15 +32,17 @@ const draftSchema = z.object({
   author: z.string().max(40).default(''),
   spaceId: z.string().min(1),
   spawn: z.object({ pos: z.tuple([z.number(), z.number(), z.number()]), yaw: z.number(), pitch: z.number() }),
-  objects: z.array(
+  objects: z
+    .array(
     z.object({
-      objectId: z.string(),
+      objectId: z.string().regex(/^[A-Za-z0-9_-]{1,40}$/),
       position: z.tuple([z.number(), z.number(), z.number()]),
       rotationY: z.number(),
       scale: z.number().positive(),
       cutout: z.object({ center: z.tuple([z.number(), z.number(), z.number()]), size: z.tuple([z.number(), z.number(), z.number()]) }).optional(),
     }),
-  ),
+  )
+    .max(24),
   splatTransform: z.array(z.number()).length(16).optional(),
 });
 type Draft = z.infer<typeof draftSchema> & { id: string; tokenHash: string; puzzle?: Puzzle; design?: Omit<DesignResult, 'puzzle'>; intro?: string; updatedAt: string };
@@ -300,6 +302,7 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
     return draft ? withoutHash(draft) : reply.code(404).send(notFound('room'));
   });
 
+  const exporting = new Map<string, Promise<string>>();
   // Every published room doubles as a robot-learning task: articulated scene + the solver's steps.
   app.get('/rooms/:id/export', { config: { rateLimit: { max: 20, timeWindow: '1 hour' } } }, async (req, reply) => {
     const id = (req.params as { id: string }).id;
@@ -307,15 +310,22 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
     if (!/^[A-Za-z0-9_-]{4,40}$/.test(id) || !EXPORT_FORMATS.includes(format)) return reply.code(400).send({ error: 'bad room id or format' });
     const room = await ctx.docs.get<RoomDoc>(`rooms/${id}`);
     if (!room) return reply.code(404).send(notFound('room'));
-    const key = `exports/${id}-${format}.zip`;
-    let url = ctx.blobs.publicUrl(key);
-    const cached = await ctx.docs.get<{ url: string }>(`exports/${id}-${format}`);
-    if (!cached) {
-      const zip = await exportRoom(room, (u) => ctx.blobs.getBytes(u), format);
-      url = await ctx.blobs.putBytes(key, zip, 'application/zip');
-      await ctx.docs.put(`exports/${id}-${format}`, { url });
+    // Keyed on the room's content, so a republished room never serves a stale export.
+    const version = createHash('sha256').update(JSON.stringify(room)).digest('hex').slice(0, 16);
+    const key = `exports/${id}-${version}-${format}.zip`;
+    const cached = await ctx.docs.get<{ url: string }>(`exports/${id}-${version}-${format}`);
+    if (cached) return reply.redirect(cached.url, 302);
+    let job = exporting.get(key);
+    if (!job) {
+      job = (async () => {
+        const zip = await exportRoom(room, (u) => ctx.blobs.getBytes(u), format);
+        const url = await ctx.blobs.putBytes(key, zip, 'application/zip');
+        await ctx.docs.put(`exports/${id}-${version}-${format}`, { url });
+        return url;
+      })().finally(() => exporting.delete(key));
+      exporting.set(key, job);
     }
-    return reply.redirect(cached?.url ?? url, 302);
+    return reply.redirect(await job, 302);
   });
 
   app.get('/rooms', async () => {

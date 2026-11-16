@@ -9,7 +9,7 @@ import { exportRoom, zipListing } from '@snoopery/export';
 import { verify } from '@snoopery/puzzle';
 import type { Action } from '@snoopery/schema';
 import { makeOpenable } from './openable.ts';
-import { loadJson, loadRemoteAsset, puzzleFrom, roomFrom } from './sources.ts';
+import { loadJson, loadRemoteAsset, puzzleFrom, roomFrom, type Lookup } from './sources.ts';
 import type { Fetch } from './sources.ts';
 
 export const SERVER_NAME = 'snoopery';
@@ -25,6 +25,8 @@ export interface ServerOptions {
   pollMs?: number;
   /** Longest a single Lux3D task may run. Default 20 min. */
   taskTimeoutMs?: number;
+  /** DNS resolver used to vet hosts named by room files (tests inject one). */
+  lookup?: Lookup;
 }
 
 const json = (value: unknown): CallToolResult => ({ content: [{ type: 'text', text: JSON.stringify(value, null, 2) }] });
@@ -123,7 +125,7 @@ export function createServer(options: ServerOptions = {}): McpServer {
     ({ room_url_or_json, format, out_path }) =>
       guarded(async () => {
         const room = roomFrom(await loadJson(room_url_or_json, fetchImpl));
-        const zip = await exportRoom(room, (url) => loadRemoteAsset(url, fetchImpl), format);
+        const zip = await exportRoom(room, (url) => loadRemoteAsset(url, fetchImpl, options.lookup), format);
         const path = await zipPath(out_path, room.id, format);
         await mkdir(dirname(path), { recursive: true });
         await writeFile(path, zip);

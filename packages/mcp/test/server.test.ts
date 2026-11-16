@@ -28,7 +28,7 @@ const clients: Client[] = [];
 
 async function connect(options: ServerOptions = {}): Promise<Client> {
   const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
-  const server = createServer({ env: {}, fetch: devFetch, ...options });
+  const server = createServer({ env: {}, fetch: devFetch, lookup: async () => [{ address: '203.0.113.7', family: 4 }], ...options });
   await server.connect(serverSide);
   const client = new Client({ name: 'test', version: '0.0.0' });
   await client.connect(clientSide);
