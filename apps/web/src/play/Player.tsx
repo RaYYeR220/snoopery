@@ -261,13 +261,13 @@ function Win({ room, game }: { room: RoomDoc; game: Game }) {
   const ms = (game.finishedAt ?? Date.now()) - game.startedAt;
   const local = room.id.startsWith('dev:');
   useEffect(() => {
-    if (!local) api<LeaderRow[]>(`/rooms/${room.id}/leaderboard`).then(setBoard).catch(() => setBoard([]));
+    if (!local) api<LeaderRow[]>(`/rooms/${encodeURIComponent(room.id)}/leaderboard`).then(setBoard).catch(() => setBoard([]));
   }, [room.id, local]);
   const save = async () => {
     setState('saving');
     try {
       await api('/plays', { method: 'POST', body: JSON.stringify({ roomId: room.id, name: name.trim() || 'anonymous', ms, steps: game.steps, hints: game.hints }) });
-      setBoard(await api<LeaderRow[]>(`/rooms/${room.id}/leaderboard`));
+      setBoard(await api<LeaderRow[]>(`/rooms/${encodeURIComponent(room.id)}/leaderboard`));
       setState('saved');
     } catch {
       setState('error');

@@ -6,11 +6,17 @@ export const ASSET_BASE = (import.meta.env.VITE_ASSET_BASE as string | undefined
 export const docUrl = (key: string) => `${ASSET_BASE}/docs/${key}.json`;
 
 /** Published rooms are static JSON next to their assets, so playing never depends on the API being up. */
+const ROOM_ID = /^[A-Za-z0-9_-]{4,40}$/;
+
 export async function loadRoom(id: string): Promise<RoomDoc> {
-  const local = id.startsWith('dev:') ? `/dev/${id.slice(4)}.json` : null;
-  const res = await fetch(local ?? docUrl(`rooms/${id}`), { cache: 'no-cache' });
+  const dev = import.meta.env.DEV && id.startsWith('dev:') ? id.slice(4) : null;
+  const slug = dev ?? id;
+  if (!ROOM_ID.test(slug)) throw new Error('This room link is not valid.');
+  const res = await fetch(dev ? `/dev/${encodeURIComponent(dev)}.json` : docUrl(`rooms/${encodeURIComponent(slug)}`), { cache: 'no-cache' });
   if (!res.ok) throw new Error(res.status === 404 ? 'This room does not exist (or was never published).' : `Could not load the room (HTTP ${res.status}).`);
-  return parseRoomDoc(await res.json());
+  const doc = parseRoomDoc(await res.json());
+  if (doc.id !== id) throw new Error('This room link is not valid.');
+  return doc;
 }
 
 export async function api<T>(path: string, init: RequestInit & { token?: string } = {}): Promise<T> {

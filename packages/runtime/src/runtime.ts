@@ -37,6 +37,15 @@ export interface RuntimeEvents {
 
 export interface Runtime {
   loadRoom(doc: RoomDoc): Promise<void>;
+  /** Loads only the scanned/generated space (studio). */
+  loadSpace(splat: RoomDoc['splat'], spawn: RoomDoc['spawn']): Promise<void>;
+  setSplatTransform(transform: number[]): void;
+  addObject(o: PlacedObject): Promise<void>;
+  updateObject(objectId: string, patch: Partial<Pick<PlacedObject, 'position' | 'rotationY' | 'scale' | 'cutout'>>): void;
+  removeObject(objectId: string): void;
+  /** World-space size of a placed object's bounding box. */
+  objectSize(objectId: string): Vec3 | null;
+  floorY(): number;
   setJoint(objectId: string, part: string, t: number): void;
   getJoint(objectId: string, part: string): number;
   animateJoint(objectId: string, part: string, to: number, ms?: number): Promise<void>;
@@ -226,10 +235,13 @@ export function createRuntime(container: HTMLElement, events: RuntimeEvents = {}
     return root;
   }
 
+  let operator: InstanceType<typeof SplatUtils.SplatOperator> | null = null;
+  const cutouts = new Map<string, NonNullable<PlacedObject['cutout']>>();
   function cutOut(splat: Object3D, boxes: NonNullable<PlacedObject['cutout']>[]) {
+    operator ??= new SplatUtils.SplatOperator(splat as never, SplatUtils.createSplatData(splat as never));
+    const op = operator;
+    op.clearState();
     if (boxes.length === 0) return;
-    const data = SplatUtils.createSplatData(splat as never);
-    const op = new SplatUtils.SplatOperator(splat as never, data);
     const inv = new Matrix4().getInverse((splat as Object3D).matrixWorld);
     const local = boxes.map((b) => {
       const box = new Box3(
@@ -250,52 +262,124 @@ export function createRuntime(container: HTMLElement, events: RuntimeEvents = {}
     if (hidden.length) op.setState(hidden, SplatState.Deleted);
   }
 
+  function computeBounds() {
+    if (!splatObj) return;
+    try {
+      operator ??= new SplatUtils.SplatOperator(splatObj as never, SplatUtils.createSplatData(splatObj as never));
+      const dense = SplatUtils.computeDenseBox(operator, 0.96);
+      const a = new Vector3(...(dense.boxMin as Vec3)).applyMatrix4(splatObj.matrixWorld);
+      const b = new Vector3(...(dense.boxMax as Vec3)).applyMatrix4(splatObj.matrixWorld);
+      const shrink = 0.35;
+      controls.bounds = {
+        min: [Math.min(a.x, b.x) + shrink, 0, Math.min(a.z, b.z) + shrink],
+        max: [Math.max(a.x, b.x) - shrink, 0, Math.max(a.z, b.z) - shrink],
+      };
+    } catch {
+      controls.bounds = null;
+    }
+  }
+
+  function refreshObstacles() {
+    controls.obstacles = [...objectRoots.values()].map((root) => {
+      const box = new Box3().setFromObject(root as never);
+      const pad = 0.28;
+      return { min: [box.min.x - pad, box.min.y, box.min.z - pad], max: [box.max.x + pad, box.max.y, box.max.z + pad] } as Bounds;
+    });
+  }
+
+  function applyCutouts() {
+    if (splatObj) cutOut(splatObj, [...cutouts.values()]);
+    forceFrames = Math.max(forceFrames, 2);
+  }
+
+  async function loadSpace(splatSpec: RoomDoc['splat'], spawn: RoomDoc['spawn']) {
+    const data = await SplatLoader.parseSplatData(formatOf(splatSpec.format), splatSpec.url, SplatLoader.SplatPackType.Compressed);
+    const splat = (await SplatUtils.createSplat(data)) as unknown as Object3D;
+    new Matrix4().fromArray(splatSpec.transform).decompose(splat.position, splat.quaternion, splat.scale);
+    splat.updateMatrixWorld(true);
+    scene.add(splat);
+    splatObj = splat;
+    operator = null;
+    floorY = spawn.pos[1] - EYE_HEIGHT;
+    controls.pose = { pos: [...spawn.pos], yaw: spawn.yaw, pitch: spawn.pitch };
+    computeBounds();
+    forceFrames = 10;
+  }
+
   return {
     controls,
+    loadSpace,
     async loadRoom(doc) {
       events.onProgress?.(0.02, 'room');
-      const data = await SplatLoader.parseSplatData(formatOf(doc.splat.format), doc.splat.url, SplatLoader.SplatPackType.Compressed);
-      const splat = (await SplatUtils.createSplat(data)) as unknown as Object3D;
-      const m = new Matrix4();
-      m.fromArray(doc.splat.transform);
-      m.decompose(splat.position, splat.quaternion, splat.scale);
-      splat.updateMatrixWorld(true);
-      scene.add(splat);
-      splatObj = splat;
+      await loadSpace(doc.splat, doc.spawn);
       events.onProgress?.(0.6, 'furniture');
-
       let done = 0;
       await Promise.all(
         doc.objects.map(async (o) => {
           await loadObject(o);
+          if (o.cutout) cutouts.set(o.objectId, o.cutout);
           events.onProgress?.(0.6 + (0.35 * ++done) / doc.objects.length, 'furniture');
         }),
       );
-      cutOut(splat, doc.objects.flatMap((o) => (o.cutout ? [o.cutout] : [])));
-
-      floorY = doc.spawn.pos[1] - EYE_HEIGHT;
-      controls.pose = { pos: [...doc.spawn.pos], yaw: doc.spawn.yaw, pitch: doc.spawn.pitch };
-      try {
-        const op = new SplatUtils.SplatOperator(splat as never, SplatUtils.createSplatData(splat as never));
-        const dense = SplatUtils.computeDenseBox(op, 0.96);
-        const a = new Vector3(...(dense.boxMin as Vec3)).applyMatrix4(splat.matrixWorld);
-        const b = new Vector3(...(dense.boxMax as Vec3)).applyMatrix4(splat.matrixWorld);
-        const shrink = 0.35;
-        controls.bounds = {
-          min: [Math.min(a.x, b.x) + shrink, 0, Math.min(a.z, b.z) + shrink],
-          max: [Math.max(a.x, b.x) - shrink, 0, Math.max(a.z, b.z) - shrink],
-        };
-      } catch {
-        controls.bounds = null;
-      }
-      controls.obstacles = [...objectRoots.values()].map((root) => {
-        const box = new Box3().setFromObject(root as never);
-        const pad = 0.28;
-        return { min: [box.min.x - pad, box.min.y, box.min.z - pad], max: [box.max.x + pad, box.max.y, box.max.z + pad] } as Bounds;
-      });
+      applyCutouts();
+      refreshObstacles();
       events.onProgress?.(1, 'ready');
       forceFrames = 10;
     },
+    setSplatTransform(transform) {
+      if (!splatObj) return;
+      new Matrix4().fromArray(transform).decompose(splatObj.position, splatObj.quaternion, splatObj.scale);
+      splatObj.setMatrixDirty();
+      splatObj.updateMatrixWorld(true);
+      computeBounds();
+      applyCutouts();
+    },
+    async addObject(o) {
+      if (objectRoots.has(o.objectId)) return;
+      await loadObject(o);
+      if (o.cutout) {
+        cutouts.set(o.objectId, o.cutout);
+        applyCutouts();
+      }
+      refreshObstacles();
+      forceFrames = Math.max(forceFrames, 4);
+    },
+    updateObject(objectId, patch) {
+      const root = objectRoots.get(objectId);
+      if (!root) return;
+      if (patch.position) root.position.set(patch.position[0], patch.position[1], patch.position[2]);
+      if (patch.rotationY !== undefined) root.rotation.y = patch.rotationY;
+      if (patch.scale !== undefined) root.scale.setScalar(patch.scale);
+      root.setMatrixDirty();
+      root.updateMatrixWorld(true);
+      if ('cutout' in patch) {
+        if (patch.cutout) cutouts.set(objectId, patch.cutout);
+        else cutouts.delete(objectId);
+        applyCutouts();
+      }
+      refreshObstacles();
+      forceFrames = Math.max(forceFrames, 2);
+    },
+    removeObject(objectId) {
+      const root = objectRoots.get(objectId);
+      if (!root) return;
+      scene.remove(root);
+      objectRoots.delete(objectId);
+      for (const [k, p] of parts) if (k.startsWith(`${objectId}.`)) {
+        meshOwner.delete(p.node);
+        parts.delete(k);
+      }
+      if (cutouts.delete(objectId)) applyCutouts();
+      refreshObstacles();
+      forceFrames = Math.max(forceFrames, 2);
+    },
+    objectSize(objectId) {
+      const root = objectRoots.get(objectId);
+      if (!root) return null;
+      const box = new Box3().setFromObject(root as never);
+      return [box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z];
+    },
+    floorY: () => floorY,
     setJoint(objectId, part, t) {
       const p = parts.get(`${objectId}.${part}`);
       if (!p) return;
