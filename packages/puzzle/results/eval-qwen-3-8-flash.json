@@ -1,0 +1,2385 @@
+{
+  "model": "qwen-3-8-flash",
+  "seed": 20261116,
+  "roomsRequested": 40,
+  "maxRounds": 4,
+  "maxTokens": 4000,
+  "thinking": false,
+  "timeoutMs": 30000,
+  "price": {
+    "input": 0.14,
+    "output": 0.49
+  },
+  "createdAt": "2026-11-16T02:49:52.730Z",
+  "stopped": null,
+  "totals": {
+    "usd": 0.08642717999999995,
+    "promptTokens": 221144,
+    "completionTokens": 113198,
+    "calls": 156
+  },
+  "rooms": [
+    {
+      "index": 0,
+      "theme": "a snowed-in mountain cabin",
+      "difficulty": 2,
+      "objects": [
+        "wardrobe",
+        "mailbox",
+        "bread_bin"
+      ],
+      "parts": 5,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container wardrobe.door_right has code 0412 but the digits in its clues (note_1) contain no digits"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 928,
+        "completionTokens": 651,
+        "usd": 0.00044891,
+        "ms": 7388
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 1,
+        "codes": [],
+        "firstCodes": [],
+        "issues": [],
+        "minSteps": 10,
+        "promptTokens": 928,
+        "completionTokens": 747,
+        "usd": 0.00049595,
+        "ms": 7668
+      }
+    },
+    {
+      "index": 1,
+      "theme": "a pirate captain's quarters",
+      "difficulty": 3,
+      "objects": [
+        "nightstand",
+        "piano",
+        "suitcase",
+        "sideboard",
+        "filing_cabinet"
+      ],
+      "parts": 12,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container piano.top_lid has code 8095 but the digits in its clues (clue_suitcase) contain no digits"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 1096,
+        "completionTokens": 736,
+        "usd": 0.0005140800000000001,
+        "ms": 10191
+      },
+      "ours": {
+        "ok": false,
+        "rounds": 4,
+        "codes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "firstCodes": [
+          "TOO_SHORT"
+        ],
+        "issues": [
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container suitcase.lid has code 172304 but the digits in its clues (c1, c2, c3) spell \"1723\""
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 7043,
+        "completionTokens": 3209,
+        "usd": 0.00255843,
+        "ms": 41856
+      }
+    },
+    {
+      "index": 2,
+      "theme": "an art gallery after a heist",
+      "difficulty": 2,
+      "objects": [
+        "filing_cabinet",
+        "wardrobe",
+        "nightstand"
+      ],
+      "parts": 7,
+      "baseline": {
+        "ok": true,
+        "rounds": 1,
+        "codes": [],
+        "firstCodes": [],
+        "issues": [],
+        "minSteps": 7,
+        "promptTokens": 959,
+        "completionTokens": 505,
+        "usd": 0.00038171000000000006,
+        "ms": 8347
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 3,
+        "codes": [],
+        "firstCodes": [
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "TOO_SHORT"
+        ],
+        "issues": [],
+        "minSteps": 10,
+        "promptTokens": 4807,
+        "completionTokens": 2073,
+        "usd": 0.0016887500000000001,
+        "ms": 27717
+      }
+    },
+    {
+      "index": 3,
+      "theme": "a pirate captain's quarters",
+      "difficulty": 3,
+      "objects": [
+        "wardrobe",
+        "laptop",
+        "jewelry_box",
+        "cookie_tin",
+        "mailbox"
+      ],
+      "parts": 7,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container wardrobe.door_right has code 1729 but the digits in its clues (laptop.lid_clue, mailbox.flap_clue) spell \"17294561729\""
+          },
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container mailbox.door has code 456 but the digits in its clues (laptop.lid_clue) spell \"1729456\""
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 1019,
+        "completionTokens": 859,
+        "usd": 0.0005635699999999999,
+        "ms": 11790
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 3,
+        "codes": [],
+        "firstCodes": [
+          "MISSING_KEY",
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [],
+        "minSteps": 16,
+        "promptTokens": 5614,
+        "completionTokens": 3267,
+        "usd": 0.0023867899999999997,
+        "ms": 39797
+      }
+    },
+    {
+      "index": 4,
+      "theme": "a surprise birthday gone wrong",
+      "difficulty": 2,
+      "objects": [
+        "bread_bin",
+        "cabinet",
+        "trunk",
+        "mailbox"
+      ],
+      "parts": 6,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "TOO_SHORT"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "TOO_SHORT"
+        ],
+        "issues": [
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container mailbox.door has code 1985 but the digits in its clues (item_clue_1, item_clue_2) spell \"19\""
+          },
+          {
+            "code": "CIRCULAR",
+            "detail": "item_clue_2 is inside mailbox.door; mailbox.door needs clue item_clue_2"
+          },
+          {
+            "code": "UNREACHABLE_CONTAINER",
+            "detail": "container mailbox.door can never be opened: it needs item_clue_2, which can never be taken"
+          },
+          {
+            "code": "UNREACHABLE_CONTAINER",
+            "detail": "container trunk.lid can never be opened: it needs item_key_cabinet, which can never be taken"
+          },
+          {
+            "code": "UNREACHABLE_ITEM",
+            "detail": "item item_clue_2 can never be taken: it is inside mailbox.door, which can never be opened"
+          },
+          {
+            "code": "UNREACHABLE_ITEM",
+            "detail": "item item_key_cabinet can never be taken: it is inside mailbox.door, which can never be opened"
+          },
+          {
+            "code": "TOO_SHORT",
+            "detail": "the shortest solution is 5 steps; this room needs at least 7"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 975,
+        "completionTokens": 681,
+        "usd": 0.00047019,
+        "ms": 8929
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "TOO_SHORT"
+        ],
+        "issues": [],
+        "minSteps": 9,
+        "promptTokens": 2808,
+        "completionTokens": 1536,
+        "usd": 0.00114576,
+        "ms": 31159
+      }
+    },
+    {
+      "index": 5,
+      "theme": "a 1920s speakeasy",
+      "difficulty": 3,
+      "objects": [
+        "jewelry_box",
+        "filing_cabinet",
+        "desk"
+      ],
+      "parts": 5,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "CLUE_MISSING_CODE",
+          "TOO_SHORT"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE",
+          "TOO_SHORT"
+        ],
+        "issues": [
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container jewelry_box.lid has code 7291 but the digits in its clues (clue_desk, clue_cab1) spell \"72915804\""
+          },
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container filing_cabinet.drawer3 has code 5804 but the digits in its clues (clue_cab2, clue_desk) spell \"7291\""
+          },
+          {
+            "code": "TOO_SHORT",
+            "detail": "the shortest solution is 8 steps; this room needs at least 10"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 940,
+        "completionTokens": 811,
+        "usd": 0.00052899,
+        "ms": 22044
+      },
+      "ours": {
+        "ok": false,
+        "rounds": 4,
+        "codes": [
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container desk.drawer1 has code 042 but the digits in its clues (clue_04, clue_2) spell \"04\""
+          },
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container filing_cabinet.drawer3 has code 1920 but the digits in its clues (clue_19, clue_20) contain no digits"
+          },
+          {
+            "code": "CIRCULAR",
+            "detail": "key_drawer2 is inside filing_cabinet.drawer2; filing_cabinet.drawer2 is locked by key_drawer2"
+          },
+          {
+            "code": "UNREACHABLE_CONTAINER",
+            "detail": "container filing_cabinet.drawer2 can never be opened: it needs key_drawer2, which can never be taken"
+          },
+          {
+            "code": "UNREACHABLE_ITEM",
+            "detail": "item key_drawer2 can never be taken: it is inside filing_cabinet.drawer2, which can never be opened"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 6810,
+        "completionTokens": 3254,
+        "usd": 0.00254786,
+        "ms": 62120
+      }
+    },
+    {
+      "index": 6,
+      "theme": "a Cold War spy safehouse",
+      "difficulty": 2,
+      "objects": [
+        "cabinet",
+        "wardrobe",
+        "dresser",
+        "microwave",
+        "cookie_tin"
+      ],
+      "parts": 9,
+      "baseline": {
+        "ok": true,
+        "rounds": 1,
+        "codes": [],
+        "firstCodes": [],
+        "issues": [],
+        "minSteps": 7,
+        "promptTokens": 1048,
+        "completionTokens": 536,
+        "usd": 0.00040936,
+        "ms": 4984
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 3,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [],
+        "minSteps": 12,
+        "promptTokens": 5355,
+        "completionTokens": 2588,
+        "usd": 0.00201782,
+        "ms": 32096
+      }
+    },
+    {
+      "index": 7,
+      "theme": "a 1920s speakeasy",
+      "difficulty": 3,
+      "objects": [
+        "cabinet",
+        "nightstand",
+        "trunk",
+        "mailbox"
+      ],
+      "parts": 7,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "MALFORMED"
+        ],
+        "firstCodes": [
+          "MALFORMED"
+        ],
+        "issues": [
+          {
+            "code": "MALFORMED",
+            "detail": "the JSON does not match the required shape: puzzle.containers.1.lock.code: Invalid string: must match pattern /^[0-9]{3,6}$/; puzzle.containers.3.lock.code: Invalid string: must match pattern /^[0-9]{3,6}$/"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 991,
+        "completionTokens": 990,
+        "usd": 0.00062384,
+        "ms": 20742
+      },
+      "ours": {
+        "ok": false,
+        "rounds": 4,
+        "codes": [
+          "UNUSED_ITEM",
+          "TOO_SHORT"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE",
+          "TOO_SHORT"
+        ],
+        "issues": [
+          {
+            "code": "UNUSED_ITEM",
+            "detail": "item item.key_nightstand (key) is not needed by any lock"
+          },
+          {
+            "code": "TOO_SHORT",
+            "detail": "the shortest solution is 9 steps; this room needs at least 10"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 6498,
+        "completionTokens": 2949,
+        "usd": 0.00235473,
+        "ms": 38871
+      }
+    },
+    {
+      "index": 8,
+      "theme": "a pirate captain's quarters",
+      "difficulty": 2,
+      "objects": [
+        "trunk",
+        "mailbox",
+        "filing_cabinet"
+      ],
+      "parts": 6,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "UNKNOWN_REF",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "EXIT_UNREACHABLE",
+          "UNUSED_ITEM"
+        ],
+        "firstCodes": [
+          "UNKNOWN_REF",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "EXIT_UNREACHABLE",
+          "UNUSED_ITEM"
+        ],
+        "issues": [
+          {
+            "code": "UNKNOWN_REF",
+            "detail": "item clue_2 is inside \"filing_cabinet.drawer1\", which is not a container"
+          },
+          {
+            "code": "UNKNOWN_REF",
+            "detail": "item clue_3 is inside \"filing_cabinet.drawer2\", which is not a container"
+          },
+          {
+            "code": "UNKNOWN_REF",
+            "detail": "item cabinet_key is inside \"filing_cabinet.drawer3\", which is not a container"
+          },
+          {
+            "code": "UNREACHABLE_CONTAINER",
+            "detail": "container trunk.lid can never be opened: it needs cabinet_key, which can never be taken"
+          },
+          {
+            "code": "UNREACHABLE_ITEM",
+            "detail": "item clue_2 can never be taken: it is inside \"filing_cabinet.drawer1\", which is not a container"
+          },
+          {
+            "code": "UNREACHABLE_ITEM",
+            "detail": "item clue_3 can never be taken: it is inside \"filing_cabinet.drawer2\", which is not a container"
+          },
+          {
+            "code": "UNREACHABLE_ITEM",
+            "detail": "item cabinet_key can never be taken: it is inside \"filing_cabinet.drawer3\", which is not a container"
+          },
+          {
+            "code": "UNREACHABLE_ITEM",
+            "detail": "item exit_key can never be taken: it is inside trunk.lid, which can never be opened"
+          },
+          {
+            "code": "EXIT_UNREACHABLE",
+            "detail": "the exit can never be opened: exit_key can never be taken"
+          },
+          {
+            "code": "UNUSED_ITEM",
+            "detail": "item clue_1 (clue) is not needed by any lock"
+          },
+          {
+            "code": "UNUSED_ITEM",
+            "detail": "item clue_2 (clue) is not needed by any lock"
+          },
+          {
+            "code": "UNUSED_ITEM",
+            "detail": "item clue_3 (clue) is not needed by any lock"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 945,
+        "completionTokens": 509,
+        "usd": 0.00038171000000000006,
+        "ms": 6537
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 1,
+        "codes": [],
+        "firstCodes": [],
+        "issues": [],
+        "minSteps": 7,
+        "promptTokens": 945,
+        "completionTokens": 490,
+        "usd": 0.0003724,
+        "ms": 18034
+      }
+    },
+    {
+      "index": 9,
+      "theme": "a 1920s speakeasy",
+      "difficulty": 3,
+      "objects": [
+        "dresser",
+        "birdhouse",
+        "mailbox",
+        "music_box",
+        "sideboard"
+      ],
+      "parts": 11,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container sideboard.door_left has code 1920 but the digits in its clues (clue_era) contain no digits"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 1079,
+        "completionTokens": 920,
+        "usd": 0.00060186,
+        "ms": 11541
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [],
+        "minSteps": 23,
+        "promptTokens": 3822,
+        "completionTokens": 3020,
+        "usd": 0.00201488,
+        "ms": 32451
+      }
+    },
+    {
+      "index": 10,
+      "theme": "a 1920s speakeasy",
+      "difficulty": 2,
+      "objects": [
+        "cookie_tin",
+        "filing_cabinet",
+        "bread_bin",
+        "cabinet"
+      ],
+      "parts": 7,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "MALFORMED"
+        ],
+        "firstCodes": [
+          "MALFORMED"
+        ],
+        "issues": [
+          {
+            "code": "MALFORMED",
+            "detail": "the JSON does not match the required shape: puzzle.containers.1.lock.code: Invalid string: must match pattern /^[0-9]{3,6}$/"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 1000,
+        "completionTokens": 462,
+        "usd": 0.00036637999999999997,
+        "ms": 6961
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [],
+        "minSteps": 9,
+        "promptTokens": 2792,
+        "completionTokens": 1379,
+        "usd": 0.00106659,
+        "ms": 20338
+      }
+    },
+    {
+      "index": 11,
+      "theme": "a surprise birthday gone wrong",
+      "difficulty": 3,
+      "objects": [
+        "laptop",
+        "cookie_tin",
+        "bread_bin"
+      ],
+      "parts": 3,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "EXIT_UNREACHABLE"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container bread_bin.flap has code 1234 but the digits in its clues (clue_a, clue_b) contain no digits"
+          },
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "the exit has code 9876 but the digits in its clues (exit_code_note, clue_a, clue_b) contain no digits"
+          },
+          {
+            "code": "CIRCULAR",
+            "detail": "clue_a is inside bread_bin.flap; bread_bin.flap needs clue clue_a"
+          },
+          {
+            "code": "CIRCULAR",
+            "detail": "clue_b is inside bread_bin.flap; bread_bin.flap needs clue clue_b"
+          },
+          {
+            "code": "UNREACHABLE_CONTAINER",
+            "detail": "container bread_bin.flap can never be opened: it needs clue_a, which can never be taken"
+          },
+          {
+            "code": "UNREACHABLE_ITEM",
+            "detail": "item clue_a can never be taken: it is inside bread_bin.flap, which can never be opened"
+          },
+          {
+            "code": "UNREACHABLE_ITEM",
+            "detail": "item clue_b can never be taken: it is inside bread_bin.flap, which can never be opened"
+          },
+          {
+            "code": "EXIT_UNREACHABLE",
+            "detail": "the exit can never be opened: clue_a can never be taken; clue_b can never be taken"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 904,
+        "completionTokens": 553,
+        "usd": 0.00039753,
+        "ms": 8120
+      },
+      "ours": {
+        "ok": false,
+        "rounds": 4,
+        "codes": [
+          "TOO_SHORT"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE",
+          "TOO_SHORT"
+        ],
+        "issues": [
+          {
+            "code": "TOO_SHORT",
+            "detail": "the shortest solution is 8 steps; this room needs at least 10"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 5604,
+        "completionTokens": 2233,
+        "usd": 0.0018787300000000001,
+        "ms": 26541
+      }
+    },
+    {
+      "index": 12,
+      "theme": "a pirate captain's quarters",
+      "difficulty": 2,
+      "objects": [
+        "sideboard",
+        "wardrobe",
+        "dresser",
+        "mailbox"
+      ],
+      "parts": 11,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "TOO_SHORT"
+        ],
+        "firstCodes": [
+          "TOO_SHORT"
+        ],
+        "issues": [
+          {
+            "code": "TOO_SHORT",
+            "detail": "the shortest solution is 6 steps; this room needs at least 7"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 1041,
+        "completionTokens": 427,
+        "usd": 0.00035497,
+        "ms": 6009
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 3,
+        "codes": [],
+        "firstCodes": [
+          "DUPLICATE_ID",
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [],
+        "minSteps": 9,
+        "promptTokens": 4907,
+        "completionTokens": 2284,
+        "usd": 0.0018061400000000001,
+        "ms": 50124
+      }
+    },
+    {
+      "index": 13,
+      "theme": "an art gallery after a heist",
+      "difficulty": 3,
+      "objects": [
+        "laptop",
+        "mailbox",
+        "toolbox",
+        "piano"
+      ],
+      "parts": 6,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container piano.fallboard has code 7391 but the digits in its clues (clue_piano_keys) contain no digits"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 977,
+        "completionTokens": 886,
+        "usd": 0.0005709199999999999,
+        "ms": 8887
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 3,
+        "codes": [],
+        "firstCodes": [
+          "MISSING_KEY",
+          "CLUE_MISSING_CODE",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [],
+        "minSteps": 10,
+        "promptTokens": 4419,
+        "completionTokens": 1922,
+        "usd": 0.0015604399999999997,
+        "ms": 21140
+      }
+    },
+    {
+      "index": 14,
+      "theme": "a Cold War spy safehouse",
+      "difficulty": 2,
+      "objects": [
+        "bread_bin",
+        "music_box",
+        "jewelry_box",
+        "toolbox"
+      ],
+      "parts": 4,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "MISSING_KEY",
+          "CLUE_MISSING_CODE",
+          "EXIT_UNREACHABLE"
+        ],
+        "firstCodes": [
+          "MISSING_KEY",
+          "CLUE_MISSING_CODE",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [
+          {
+            "code": "MISSING_KEY",
+            "detail": "the exit is locked by key \"toolbox_key\", which does not exist"
+          },
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container jewelry_box.lid has code 4219 but the digits in its clues (note_1, note_2) contain no digits"
+          },
+          {
+            "code": "EXIT_UNREACHABLE",
+            "detail": "the exit can never be opened: toolbox_key does not exist"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 951,
+        "completionTokens": 572,
+        "usd": 0.00041341999999999996,
+        "ms": 8760
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 4,
+        "codes": [],
+        "firstCodes": [
+          "MALFORMED"
+        ],
+        "issues": [],
+        "minSteps": 9,
+        "promptTokens": 5915,
+        "completionTokens": 2422,
+        "usd": 0.00201488,
+        "ms": 31321
+      }
+    },
+    {
+      "index": 15,
+      "theme": "a pirate captain's quarters",
+      "difficulty": 3,
+      "objects": [
+        "safe",
+        "wardrobe",
+        "dresser"
+      ],
+      "parts": 6,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "MISSING_KEY",
+          "EXIT_UNREACHABLE"
+        ],
+        "firstCodes": [
+          "MISSING_KEY",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [
+          {
+            "code": "MISSING_KEY",
+            "detail": "the exit is locked by key \"dresser.key_exit\", which does not exist"
+          },
+          {
+            "code": "EXIT_UNREACHABLE",
+            "detail": "the exit can never be opened: dresser.key_exit does not exist"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 939,
+        "completionTokens": 764,
+        "usd": 0.00050582,
+        "ms": 20267
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "TOO_SHORT"
+        ],
+        "issues": [],
+        "minSteps": 10,
+        "promptTokens": 2745,
+        "completionTokens": 1608,
+        "usd": 0.0011722199999999999,
+        "ms": 28897
+      }
+    },
+    {
+      "index": 16,
+      "theme": "a 1920s speakeasy",
+      "difficulty": 2,
+      "objects": [
+        "microwave",
+        "suitcase",
+        "birdhouse",
+        "cookie_tin",
+        "sideboard"
+      ],
+      "parts": 8,
+      "baseline": {
+        "ok": true,
+        "rounds": 1,
+        "codes": [],
+        "firstCodes": [],
+        "issues": [],
+        "minSteps": 9,
+        "promptTokens": 1036,
+        "completionTokens": 860,
+        "usd": 0.0005664400000000001,
+        "ms": 12608
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE",
+          "TOO_SHORT"
+        ],
+        "issues": [],
+        "minSteps": 11,
+        "promptTokens": 2865,
+        "completionTokens": 1416,
+        "usd": 0.00109494,
+        "ms": 20358
+      }
+    },
+    {
+      "index": 17,
+      "theme": "a 1920s speakeasy",
+      "difficulty": 3,
+      "objects": [
+        "filing_cabinet",
+        "mailbox",
+        "laptop"
+      ],
+      "parts": 6,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "TOO_SHORT"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "TOO_SHORT"
+        ],
+        "issues": [
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container filing_cabinet.drawer3 has code 1920 but the digits in its clues (item_clue_1, item_clue_2) contain no digits"
+          },
+          {
+            "code": "CIRCULAR",
+            "detail": "item_key_2 is inside laptop.lid; laptop.lid is locked by item_key_3; item_key_3 is inside mailbox.door; mailbox.door is locked by item_key_2"
+          },
+          {
+            "code": "UNREACHABLE_CONTAINER",
+            "detail": "container mailbox.door can never be opened: it needs item_key_2, which can never be taken"
+          },
+          {
+            "code": "UNREACHABLE_CONTAINER",
+            "detail": "container laptop.lid can never be opened: it needs item_key_3, which can never be taken"
+          },
+          {
+            "code": "UNREACHABLE_ITEM",
+            "detail": "item item_key_2 can never be taken: it is inside laptop.lid, which can never be opened"
+          },
+          {
+            "code": "UNREACHABLE_ITEM",
+            "detail": "item item_key_3 can never be taken: it is inside mailbox.door, which can never be opened"
+          },
+          {
+            "code": "TOO_SHORT",
+            "detail": "the shortest solution is 9 steps; this room needs at least 10"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 952,
+        "completionTokens": 826,
+        "usd": 0.00053802,
+        "ms": 10206
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 1,
+        "codes": [],
+        "firstCodes": [],
+        "issues": [],
+        "minSteps": 13,
+        "promptTokens": 952,
+        "completionTokens": 802,
+        "usd": 0.00052626,
+        "ms": 10813
+      }
+    },
+    {
+      "index": 18,
+      "theme": "a surprise birthday gone wrong",
+      "difficulty": 2,
+      "objects": [
+        "mailbox",
+        "trunk",
+        "filing_cabinet",
+        "suitcase"
+      ],
+      "parts": 7,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container filing_cabinet.drawer1 has code 0524 but the digits in its clues (clue_date) spell \"24\""
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 991,
+        "completionTokens": 482,
+        "usd": 0.00037492,
+        "ms": 8773
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 3,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [],
+        "minSteps": 8,
+        "promptTokens": 4459,
+        "completionTokens": 1899,
+        "usd": 0.00155477,
+        "ms": 30796
+      }
+    },
+    {
+      "index": 19,
+      "theme": "a snowed-in mountain cabin",
+      "difficulty": 3,
+      "objects": [
+        "toolbox",
+        "microwave",
+        "mailbox",
+        "trunk"
+      ],
+      "parts": 5,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "UNUSED_ITEM",
+          "TOO_SHORT"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "UNUSED_ITEM",
+          "TOO_SHORT"
+        ],
+        "issues": [
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container mailbox.door has code 1204 but the digits in its clues (item_microwave_clue, item_trunk_clue) spell \"124\""
+          },
+          {
+            "code": "CIRCULAR",
+            "detail": "item_mailbox_key is inside mailbox.door; mailbox.door needs clue item_trunk_clue; item_trunk_clue is inside trunk.lid; trunk.lid is locked by item_mailbox_key"
+          },
+          {
+            "code": "UNREACHABLE_CONTAINER",
+            "detail": "container mailbox.door can never be opened: it needs item_trunk_clue, which can never be taken"
+          },
+          {
+            "code": "UNREACHABLE_CONTAINER",
+            "detail": "container trunk.lid can never be opened: it needs item_mailbox_key, which can never be taken"
+          },
+          {
+            "code": "UNREACHABLE_ITEM",
+            "detail": "item item_mailbox_key can never be taken: it is inside mailbox.door, which can never be opened"
+          },
+          {
+            "code": "UNREACHABLE_ITEM",
+            "detail": "item item_trunk_clue can never be taken: it is inside trunk.lid, which can never be opened"
+          },
+          {
+            "code": "UNUSED_ITEM",
+            "detail": "item item_floor_key (key) is not needed by any lock"
+          },
+          {
+            "code": "TOO_SHORT",
+            "detail": "the shortest solution is 3 steps; this room needs at least 10"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 959,
+        "completionTokens": 777,
+        "usd": 0.00051499,
+        "ms": 23675
+      },
+      "ours": {
+        "ok": false,
+        "rounds": 4,
+        "codes": [
+          "TOO_SHORT"
+        ],
+        "firstCodes": [
+          "MISSING_KEY",
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [
+          {
+            "code": "TOO_SHORT",
+            "detail": "the shortest solution is 1 steps; this room needs at least 10"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 6611,
+        "completionTokens": 2559,
+        "usd": 0.0021794500000000003,
+        "ms": 34634
+      }
+    },
+    {
+      "index": 20,
+      "theme": "a surprise birthday gone wrong",
+      "difficulty": 2,
+      "objects": [
+        "desk",
+        "toolbox",
+        "suitcase"
+      ],
+      "parts": 3,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container desk.drawer1 has code 842 but the digits in its clues (clue_age, clue_time) spell \"84\""
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 898,
+        "completionTokens": 536,
+        "usd": 0.00038836000000000003,
+        "ms": 11064
+      },
+      "ours": {
+        "ok": false,
+        "rounds": 4,
+        "codes": [
+          "UNUSED_ITEM"
+        ],
+        "firstCodes": [
+          "MISSING_KEY",
+          "CLUE_MISSING_CODE",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [
+          {
+            "code": "UNUSED_ITEM",
+            "detail": "item item_toolbox_key (key) is not needed by any lock"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 5749,
+        "completionTokens": 2401,
+        "usd": 0.0019813499999999998,
+        "ms": 39953
+      }
+    },
+    {
+      "index": 21,
+      "theme": "an art gallery after a heist",
+      "difficulty": 3,
+      "objects": [
+        "birdhouse",
+        "piano",
+        "trunk",
+        "toolbox"
+      ],
+      "parts": 5,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container trunk.lid has code 7219 but the digits in its clues (clue_piano_code, clue_toolbox_code) spell \"72\""
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 961,
+        "completionTokens": 746,
+        "usd": 0.0005000800000000001,
+        "ms": 11431
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [],
+        "minSteps": 11,
+        "promptTokens": 2760,
+        "completionTokens": 1462,
+        "usd": 0.0011027799999999998,
+        "ms": 20613
+      }
+    },
+    {
+      "index": 22,
+      "theme": "a Cold War spy safehouse",
+      "difficulty": 2,
+      "objects": [
+        "jewelry_box",
+        "music_box",
+        "mailbox",
+        "piano",
+        "bread_bin"
+      ],
+      "parts": 7,
+      "baseline": {
+        "ok": true,
+        "rounds": 1,
+        "codes": [],
+        "firstCodes": [],
+        "issues": [],
+        "minSteps": 8,
+        "promptTokens": 1027,
+        "completionTokens": 675,
+        "usd": 0.00047452999999999997,
+        "ms": 8022
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 3,
+        "codes": [],
+        "firstCodes": [
+          "TOO_SHORT"
+        ],
+        "issues": [],
+        "minSteps": 13,
+        "promptTokens": 4958,
+        "completionTokens": 2598,
+        "usd": 0.00196714,
+        "ms": 46126
+      }
+    },
+    {
+      "index": 23,
+      "theme": "a space station crew cabin",
+      "difficulty": 3,
+      "objects": [
+        "sideboard",
+        "safe",
+        "laptop",
+        "mailbox"
+      ],
+      "parts": 8,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container sideboard.door_left has code 4921 but the digits in its clues (clue_1, clue_2) spell \"49\""
+          },
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container safe.door has code 7305 but the digits in its clues (clue_3, clue_4) spell \"21\""
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 998,
+        "completionTokens": 895,
+        "usd": 0.00057827,
+        "ms": 9877
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 3,
+        "codes": [],
+        "firstCodes": [
+          "MALFORMED"
+        ],
+        "issues": [],
+        "minSteps": 13,
+        "promptTokens": 4886,
+        "completionTokens": 2534,
+        "usd": 0.0019257000000000002,
+        "ms": 40788
+      }
+    },
+    {
+      "index": 24,
+      "theme": "an art gallery after a heist",
+      "difficulty": 2,
+      "objects": [
+        "nightstand",
+        "bread_bin",
+        "music_box",
+        "microwave",
+        "cookie_tin"
+      ],
+      "parts": 6,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container nightstand.door has code 729 but the digits in its clues (clue_nightstand) spell \"0729\""
+          },
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container microwave.door has code 418 but the digits in its clues (clue_microwave) spell \"0418\""
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 1009,
+        "completionTokens": 824,
+        "usd": 0.00054502,
+        "ms": 22833
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 3,
+        "codes": [],
+        "firstCodes": [
+          "MALFORMED"
+        ],
+        "issues": [],
+        "minSteps": 10,
+        "promptTokens": 4523,
+        "completionTokens": 1999,
+        "usd": 0.00161273,
+        "ms": 40634
+      }
+    },
+    {
+      "index": 25,
+      "theme": "a mad inventor's workshop",
+      "difficulty": 3,
+      "objects": [
+        "filing_cabinet",
+        "music_box",
+        "microwave",
+        "birdhouse"
+      ],
+      "parts": 6,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container microwave.door has code 915 but the digits in its clues (clue_birdhouse_note) contain no digits"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 978,
+        "completionTokens": 918,
+        "usd": 0.00058674,
+        "ms": 11134
+      },
+      "ours": {
+        "ok": false,
+        "rounds": 4,
+        "codes": [
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "TOO_SHORT"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE",
+          "TOO_SHORT"
+        ],
+        "issues": [
+          {
+            "code": "CIRCULAR",
+            "detail": "clue_music_box is inside music_box.lid; music_box.lid is locked by key_large_rusty; key_large_rusty is inside filing_cabinet.drawer2; filing_cabinet.drawer2 needs clue clue_music_box"
+          },
+          {
+            "code": "UNREACHABLE_CONTAINER",
+            "detail": "container filing_cabinet.drawer2 can never be opened: it needs clue_music_box, which can never be taken"
+          },
+          {
+            "code": "UNREACHABLE_CONTAINER",
+            "detail": "container music_box.lid can never be opened: it needs key_large_rusty, which can never be taken"
+          },
+          {
+            "code": "UNREACHABLE_ITEM",
+            "detail": "item clue_music_box can never be taken: it is inside music_box.lid, which can never be opened"
+          },
+          {
+            "code": "UNREACHABLE_ITEM",
+            "detail": "item key_large_rusty can never be taken: it is inside filing_cabinet.drawer2, which can never be opened"
+          },
+          {
+            "code": "TOO_SHORT",
+            "detail": "the shortest solution is 5 steps; this room needs at least 10"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 6809,
+        "completionTokens": 3404,
+        "usd": 0.00262122,
+        "ms": 40746
+      }
+    },
+    {
+      "index": 26,
+      "theme": "an art gallery after a heist",
+      "difficulty": 2,
+      "objects": [
+        "nightstand",
+        "suitcase",
+        "sideboard",
+        "laptop"
+      ],
+      "parts": 8,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container laptop.lid has code 927 but the digits in its clues (clue_canvas, clue_frame) spell \"9\""
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 1003,
+        "completionTokens": 552,
+        "usd": 0.0004109,
+        "ms": 9545
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "MISSING_CLUE",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [],
+        "minSteps": 9,
+        "promptTokens": 2672,
+        "completionTokens": 1206,
+        "usd": 0.00096502,
+        "ms": 24544
+      }
+    },
+    {
+      "index": 27,
+      "theme": "an art gallery after a heist",
+      "difficulty": 3,
+      "objects": [
+        "music_box",
+        "mailbox",
+        "wardrobe",
+        "bread_bin",
+        "birdhouse"
+      ],
+      "parts": 7,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "TOO_SHORT"
+        ],
+        "firstCodes": [
+          "TOO_SHORT"
+        ],
+        "issues": [
+          {
+            "code": "TOO_SHORT",
+            "detail": "the shortest solution is 8 steps; this room needs at least 10"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 1019,
+        "completionTokens": 860,
+        "usd": 0.0005640599999999999,
+        "ms": 11485
+      },
+      "ours": {
+        "ok": false,
+        "rounds": 4,
+        "codes": [
+          "TOO_SHORT"
+        ],
+        "firstCodes": [
+          "TOO_SHORT"
+        ],
+        "issues": [
+          {
+            "code": "TOO_SHORT",
+            "detail": "the shortest solution is 8 steps; this room needs at least 10"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 6982,
+        "completionTokens": 3509,
+        "usd": 0.00269689,
+        "ms": 58840
+      }
+    },
+    {
+      "index": 28,
+      "theme": "a space station crew cabin",
+      "difficulty": 2,
+      "objects": [
+        "music_box",
+        "sideboard",
+        "safe",
+        "laptop",
+        "wardrobe"
+      ],
+      "parts": 9,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "MALFORMED"
+        ],
+        "firstCodes": [
+          "MALFORMED"
+        ],
+        "issues": [
+          {
+            "code": "MALFORMED",
+            "detail": "the JSON does not match the required shape: puzzle.containers.2.lock.code: Invalid string: must match pattern /^[0-9]{3,6}$/"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 1042,
+        "completionTokens": 561,
+        "usd": 0.00042077,
+        "ms": 7358
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "MISSING_KEY",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [],
+        "minSteps": 7,
+        "promptTokens": 2595,
+        "completionTokens": 911,
+        "usd": 0.0008096900000000001,
+        "ms": 11184
+      }
+    },
+    {
+      "index": 29,
+      "theme": "a space station crew cabin",
+      "difficulty": 3,
+      "objects": [
+        "jewelry_box",
+        "cookie_tin",
+        "cabinet"
+      ],
+      "parts": 4,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "EXIT_UNREACHABLE"
+        ],
+        "firstCodes": [
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [
+          {
+            "code": "CIRCULAR",
+            "detail": "key_small is inside jewelry_box.lid; jewelry_box.lid is locked by key_medium; key_medium is inside cookie_tin.lid; cookie_tin.lid sits inside cabinet.door_right; cabinet.door_right is locked by key_small"
+          },
+          {
+            "code": "UNREACHABLE_CONTAINER",
+            "detail": "container cabinet.door_right can never be opened: it needs key_small, which can never be taken"
+          },
+          {
+            "code": "UNREACHABLE_CONTAINER",
+            "detail": "container jewelry_box.lid can never be opened: it needs key_medium, which can never be taken"
+          },
+          {
+            "code": "UNREACHABLE_CONTAINER",
+            "detail": "container cookie_tin.lid can never be opened: it is inside cabinet.door_right, which can never be opened"
+          },
+          {
+            "code": "UNREACHABLE_ITEM",
+            "detail": "item key_small can never be taken: it is inside jewelry_box.lid, which can never be opened"
+          },
+          {
+            "code": "UNREACHABLE_ITEM",
+            "detail": "item key_medium can never be taken: it is inside cookie_tin.lid, which can never be opened"
+          },
+          {
+            "code": "EXIT_UNREACHABLE",
+            "detail": "the exit can never be opened: key_small can never be taken"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 918,
+        "completionTokens": 681,
+        "usd": 0.00046221000000000006,
+        "ms": 7239
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 4,
+        "codes": [],
+        "firstCodes": [
+          "MISSING_KEY",
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [],
+        "minSteps": 10,
+        "promptTokens": 6674,
+        "completionTokens": 2616,
+        "usd": 0.0022162,
+        "ms": 29861
+      }
+    },
+    {
+      "index": 30,
+      "theme": "a Victorian detective's study",
+      "difficulty": 2,
+      "objects": [
+        "desk",
+        "birdhouse",
+        "sideboard",
+        "microwave",
+        "cabinet"
+      ],
+      "parts": 9,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "CLUE_MISSING_CODE",
+          "UNUSED_ITEM",
+          "TOO_SHORT"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE",
+          "UNUSED_ITEM",
+          "TOO_SHORT"
+        ],
+        "issues": [
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container microwave.door has code 0725 but the digits in its clues (clue1, clue2) spell \"7\""
+          },
+          {
+            "code": "UNUSED_ITEM",
+            "detail": "item key1 (key) is not needed by any lock"
+          },
+          {
+            "code": "TOO_SHORT",
+            "detail": "the shortest solution is 5 steps; this room needs at least 7"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 1044,
+        "completionTokens": 477,
+        "usd": 0.00037988999999999997,
+        "ms": 7008
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 4,
+        "codes": [],
+        "firstCodes": [
+          "MALFORMED"
+        ],
+        "issues": [],
+        "minSteps": 7,
+        "promptTokens": 7037,
+        "completionTokens": 3429,
+        "usd": 0.00266539,
+        "ms": 46972
+      }
+    },
+    {
+      "index": 31,
+      "theme": "a mad inventor's workshop",
+      "difficulty": 3,
+      "objects": [
+        "music_box",
+        "laptop",
+        "suitcase",
+        "wardrobe"
+      ],
+      "parts": 5,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "MISSING_KEY",
+          "CLUE_MISSING_CODE",
+          "EXIT_UNREACHABLE"
+        ],
+        "firstCodes": [
+          "MISSING_KEY",
+          "CLUE_MISSING_CODE",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [
+          {
+            "code": "MISSING_KEY",
+            "detail": "the exit is locked by key \"item_exit_key\", which does not exist"
+          },
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container suitcase.lid has code 4921 but the digits in its clues (item_clue_laptop) contain no digits"
+          },
+          {
+            "code": "EXIT_UNREACHABLE",
+            "detail": "the exit can never be opened: item_exit_key does not exist"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 960,
+        "completionTokens": 558,
+        "usd": 0.00040782000000000004,
+        "ms": 16998
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 3,
+        "codes": [],
+        "firstCodes": [
+          "MISSING_CLUE",
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [],
+        "minSteps": 12,
+        "promptTokens": 4879,
+        "completionTokens": 2329,
+        "usd": 0.0018242699999999998,
+        "ms": 26522
+      }
+    },
+    {
+      "index": 32,
+      "theme": "a surprise birthday gone wrong",
+      "difficulty": 2,
+      "objects": [
+        "nightstand",
+        "bread_bin",
+        "jewelry_box",
+        "desk",
+        "birdhouse"
+      ],
+      "parts": 6,
+      "baseline": {
+        "ok": true,
+        "rounds": 1,
+        "codes": [],
+        "firstCodes": [],
+        "issues": [],
+        "minSteps": 9,
+        "promptTokens": 1005,
+        "completionTokens": 835,
+        "usd": 0.0005498500000000001,
+        "ms": 10844
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 1,
+        "codes": [],
+        "firstCodes": [],
+        "issues": [],
+        "minSteps": 10,
+        "promptTokens": 1005,
+        "completionTokens": 649,
+        "usd": 0.00045871000000000003,
+        "ms": 8422
+      }
+    },
+    {
+      "index": 33,
+      "theme": "a Victorian detective's study",
+      "difficulty": 3,
+      "objects": [
+        "birdhouse",
+        "dresser",
+        "microwave",
+        "nightstand"
+      ],
+      "parts": 7,
+      "baseline": {
+        "ok": true,
+        "rounds": 1,
+        "codes": [],
+        "firstCodes": [],
+        "issues": [],
+        "minSteps": 13,
+        "promptTokens": 987,
+        "completionTokens": 862,
+        "usd": 0.00056056,
+        "ms": 12480
+      },
+      "ours": {
+        "ok": false,
+        "rounds": 4,
+        "codes": [
+          "TOO_SHORT"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [
+          {
+            "code": "TOO_SHORT",
+            "detail": "the shortest solution is 7 steps; this room needs at least 10"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 7633,
+        "completionTokens": 3752,
+        "usd": 0.0029070999999999997,
+        "ms": 52126
+      }
+    },
+    {
+      "index": 34,
+      "theme": "an art gallery after a heist",
+      "difficulty": 2,
+      "objects": [
+        "desk",
+        "music_box",
+        "wardrobe",
+        "mailbox"
+      ],
+      "parts": 6,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container wardrobe.door_left has code 1920 but the digits in its clues (clue_date) contain no digits"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 971,
+        "completionTokens": 478,
+        "usd": 0.00037016,
+        "ms": 16366
+      },
+      "ours": {
+        "ok": false,
+        "rounds": 4,
+        "codes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "firstCodes": [
+          "MALFORMED"
+        ],
+        "issues": [
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container music_box.lid has code 4207 but the digits in its clues (clue_count, clue_year, clue_code) spell \"42207\""
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 6170,
+        "completionTokens": 2660,
+        "usd": 0.0021672,
+        "ms": 32771
+      }
+    },
+    {
+      "index": 35,
+      "theme": "a mad inventor's workshop",
+      "difficulty": 3,
+      "objects": [
+        "toolbox",
+        "wardrobe",
+        "mailbox",
+        "music_box"
+      ],
+      "parts": 6,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "MISSING_KEY",
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "EXIT_UNREACHABLE"
+        ],
+        "firstCodes": [
+          "MISSING_KEY",
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [
+          {
+            "code": "MISSING_KEY",
+            "detail": "the exit is locked by key \"item_key_exit\", which does not exist"
+          },
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container wardrobe.door_left has code 7391 but the digits in its clues (clue_toolbox, clue_music) contain no digits"
+          },
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container wardrobe.door_right has code 7391 but the digits in its clues (clue_toolbox, clue_music) contain no digits"
+          },
+          {
+            "code": "CIRCULAR",
+            "detail": "clue_music is inside music_box.lid; music_box.lid sits inside wardrobe.door_left; wardrobe.door_left needs clue clue_music"
+          },
+          {
+            "code": "CIRCULAR",
+            "detail": "item_key_wardrobe is inside wardrobe.door_right; wardrobe.door_right needs clue clue_music; clue_music is inside music_box.lid; music_box.lid is locked by item_key_wardrobe"
+          },
+          {
+            "code": "UNREACHABLE_CONTAINER",
+            "detail": "container wardrobe.door_left can never be opened: it needs clue_music, which can never be taken"
+          },
+          {
+            "code": "UNREACHABLE_CONTAINER",
+            "detail": "container wardrobe.door_right can never be opened: it needs clue_music, which can never be taken"
+          },
+          {
+            "code": "UNREACHABLE_CONTAINER",
+            "detail": "container music_box.lid can never be opened: it is inside wardrobe.door_left, which can never be opened"
+          },
+          {
+            "code": "UNREACHABLE_ITEM",
+            "detail": "item item_key_wardrobe can never be taken: it is inside wardrobe.door_right, which can never be opened"
+          },
+          {
+            "code": "UNREACHABLE_ITEM",
+            "detail": "item clue_music can never be taken: it is inside music_box.lid, which can never be opened"
+          },
+          {
+            "code": "EXIT_UNREACHABLE",
+            "detail": "the exit can never be opened: item_key_exit does not exist"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 970,
+        "completionTokens": 668,
+        "usd": 0.00046312,
+        "ms": 12402
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "MISSING_KEY",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [],
+        "minSteps": 13,
+        "promptTokens": 2986,
+        "completionTokens": 1652,
+        "usd": 0.00122752,
+        "ms": 21691
+      }
+    },
+    {
+      "index": 36,
+      "theme": "a mad inventor's workshop",
+      "difficulty": 2,
+      "objects": [
+        "safe",
+        "laptop",
+        "cabinet",
+        "suitcase"
+      ],
+      "parts": 5,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "MISSING_KEY",
+          "CLUE_MISSING_CODE",
+          "EXIT_UNREACHABLE"
+        ],
+        "firstCodes": [
+          "MISSING_KEY",
+          "CLUE_MISSING_CODE",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [
+          {
+            "code": "MISSING_KEY",
+            "detail": "the exit is locked by key \"cabinet.door_right.exit_key\", which does not exist"
+          },
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container laptop.lid has code 1984 but the digits in its clues (cabinet.door_left.clue) contain no digits"
+          },
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container safe.door has code 0723 but the digits in its clues (suitcase.lid.clue) contain no digits"
+          },
+          {
+            "code": "EXIT_UNREACHABLE",
+            "detail": "the exit can never be opened: cabinet.door_right.exit_key does not exist"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 958,
+        "completionTokens": 741,
+        "usd": 0.00049721,
+        "ms": 9648
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 3,
+        "codes": [],
+        "firstCodes": [
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "TOO_SHORT"
+        ],
+        "issues": [],
+        "minSteps": 8,
+        "promptTokens": 4225,
+        "completionTokens": 1653,
+        "usd": 0.0014014700000000001,
+        "ms": 23207
+      }
+    },
+    {
+      "index": 37,
+      "theme": "a Cold War spy safehouse",
+      "difficulty": 3,
+      "objects": [
+        "sideboard",
+        "nightstand",
+        "trunk",
+        "dresser",
+        "suitcase"
+      ],
+      "parts": 11,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "TOO_SHORT"
+        ],
+        "firstCodes": [
+          "TOO_SHORT"
+        ],
+        "issues": [
+          {
+            "code": "TOO_SHORT",
+            "detail": "the shortest solution is 8 steps; this room needs at least 10"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 1077,
+        "completionTokens": 514,
+        "usd": 0.00040264,
+        "ms": 7763
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 3,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [],
+        "minSteps": 10,
+        "promptTokens": 4821,
+        "completionTokens": 2056,
+        "usd": 0.00168238,
+        "ms": 28408
+      }
+    },
+    {
+      "index": 38,
+      "theme": "a Victorian detective's study",
+      "difficulty": 2,
+      "objects": [
+        "birdhouse",
+        "toolbox",
+        "cookie_tin",
+        "filing_cabinet",
+        "bread_bin"
+      ],
+      "parts": 7,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container filing_cabinet.drawer1 has code 0712 but the digits in its clues (clue_bird) contain no digits"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 1022,
+        "completionTokens": 696,
+        "usd": 0.00048412,
+        "ms": 21776
+      },
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "MALFORMED"
+        ],
+        "issues": [],
+        "minSteps": 9,
+        "promptTokens": 2743,
+        "completionTokens": 1259,
+        "usd": 0.00100093,
+        "ms": 19356
+      }
+    },
+    {
+      "index": 39,
+      "theme": "a 1920s speakeasy",
+      "difficulty": 3,
+      "objects": [
+        "piano",
+        "bread_bin",
+        "mailbox",
+        "safe"
+      ],
+      "parts": 6,
+      "baseline": {
+        "ok": false,
+        "rounds": 1,
+        "codes": [
+          "MISSING_KEY",
+          "CLUE_MISSING_CODE",
+          "EXIT_UNREACHABLE"
+        ],
+        "firstCodes": [
+          "MISSING_KEY",
+          "CLUE_MISSING_CODE",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [
+          {
+            "code": "MISSING_KEY",
+            "detail": "the exit is locked by key \"key_exit\", which does not exist"
+          },
+          {
+            "code": "CLUE_MISSING_CODE",
+            "detail": "container mailbox.door has code 1920 but the digits in its clues (clue_piano_note) contain no digits"
+          },
+          {
+            "code": "EXIT_UNREACHABLE",
+            "detail": "the exit can never be opened: key_exit does not exist"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 980,
+        "completionTokens": 686,
+        "usd": 0.00047334000000000005,
+        "ms": 8246
+      },
+      "ours": {
+        "ok": false,
+        "rounds": 4,
+        "codes": [
+          "TOO_SHORT"
+        ],
+        "firstCodes": [
+          "CLUE_MISSING_CODE",
+          "TOO_SHORT"
+        ],
+        "issues": [
+          {
+            "code": "TOO_SHORT",
+            "detail": "the shortest solution is 8 steps; this room needs at least 10"
+          }
+        ],
+        "minSteps": null,
+        "promptTokens": 5581,
+        "completionTokens": 1892,
+        "usd": 0.0017084200000000002,
+        "ms": 37289
+      }
+    }
+  ]
+}
