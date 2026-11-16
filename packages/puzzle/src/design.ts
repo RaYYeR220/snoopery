@@ -13,11 +13,13 @@ export interface DesignInput {
 }
 
 export interface DesignOptions {
-  /** Attempts including the first one. Default 4. */
+  /** Attempts including the first one. Default 6. */
   maxRounds?: number;
   /** false = one-shot baseline: same prompt, no verifier feedback. Default true. */
   repair?: boolean;
   maxTokens?: number;
+  /** Hand the rounds after `afterRound` (default 3) to a second model; it sees the last attempt and its issues. */
+  escalate?: { llm: LLM; afterRound?: number };
 }
 
 export interface DesignResult {
@@ -38,7 +40,9 @@ export type ParsedDesign = { ok: true; puzzle: Puzzle; title: string; intro: str
 
 export async function designRoom(input: DesignInput, llm: LLM, opts: DesignOptions = {}): Promise<DesignResult> {
   const repair = opts.repair ?? true;
-  const maxRounds = repair ? Math.max(1, opts.maxRounds ?? 4) : 1;
+  const maxRounds = repair ? Math.max(1, opts.maxRounds ?? 6) : 1;
+  const escalation = repair ? opts.escalate : undefined;
+  const escalateAfter = escalation?.afterRound ?? 3;
   const maxTokens = opts.maxTokens ?? 4000;
   const minSteps = MIN_STEPS[input.difficulty];
   const cards = input.cards.filter((card) => card.parts.length > 0);
@@ -54,7 +58,8 @@ export async function designRoom(input: DesignInput, llm: LLM, opts: DesignOptio
   for (let round = 1; round <= maxRounds; round++) {
     let raw: string;
     try {
-      raw = await llm.complete(messages, { maxTokens, json: true });
+      const model = escalation && round > escalateAfter ? escalation.llm : llm;
+      raw = await model.complete(messages, { maxTokens, json: true });
     } catch (err) {
       return { ok: false, verdict, rounds: round - 1, transcript, error: err instanceof Error ? err.message : String(err) };
     }
@@ -70,7 +75,13 @@ export async function designRoom(input: DesignInput, llm: LLM, opts: DesignOptio
       if (verdict.solvable) {
         return { ok: true, puzzle: parsed.puzzle, title: parsed.title, intro: parsed.intro, verdict, rounds: round, transcript };
       }
-      feedback = repairRequest(verdict.issues, verdict.proof.length > 0 ? verdict.minSteps : null);
+      feedback = repairRequest(verdict.issues, {
+        shortest: verdict.proof.length > 0 ? verdict.minSteps : null,
+        floor: minSteps,
+        cards,
+        puzzle: parsed.puzzle,
+        proof: verdict.proof,
+      });
     }
     // Only the latest attempt goes back to the model, so repair prompts stay the same size.
     messages = [...opening, { role: 'assistant', content: raw }, { role: 'user', content: feedback }];

@@ -1,4 +1,6 @@
-// Renders results/EVAL.md from every results/eval-<model>.json. Usage: tsx eval/render.ts
+// Renders results/EVAL.md from every results/eval-*.json. Usage: tsx eval/render.ts
+// Files with the same primary model and seed share one table: the baseline column comes from the file that ran
+// the baseline arm, and every file that ran the repair arm adds its own column.
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -7,17 +9,28 @@ import type { ArmResult, EvalFile, RoomResult } from './run';
 
 const resultsDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'results');
 
-type Pick = (r: RoomResult) => { ok: boolean; codes: IssueCode[] };
-const baseline: Pick = (r) => ({ ok: r.baseline.ok, codes: r.baseline.codes });
-const firstRound: Pick = (r) => ({ ok: r.ours.firstCodes.length === 0, codes: r.ours.firstCodes });
-const ours: Pick = (r) => ({ ok: r.ours.ok, codes: r.ours.codes });
+interface Outcome {
+  ok: boolean;
+  codes: IssueCode[];
+}
+
+interface Column {
+  title: string;
+  /** Rooms whose arm finished without a transport error. */
+  rooms: RoomResult[];
+  /** Rooms the source file attempted, for the transport-failure note. */
+  attempted: number;
+  outcome: (r: RoomResult) => Outcome;
+  /** Arm used for rounds/tokens/cost rows; absent for the round-1-only view. */
+  arm?: (r: RoomResult) => ArmResult;
+}
 
 const any =
   (...codes: IssueCode[]) =>
-  (a: { codes: IssueCode[] }) =>
+  (a: Outcome) =>
     a.codes.some((c) => codes.includes(c));
 
-const METRICS: [string, (a: { ok: boolean; codes: IssueCode[] }) => boolean][] = [
+const METRICS: [string, (a: Outcome) => boolean][] = [
   ['**Solvable (verified)**', (a) => a.ok],
   ['Circular dependency', any('CIRCULAR')],
   ['Soft-lock (exit, item or container unreachable)', any('EXIT_UNREACHABLE', 'UNREACHABLE_ITEM', 'UNREACHABLE_CONTAINER')],
@@ -31,84 +44,144 @@ const METRICS: [string, (a: { ok: boolean; codes: IssueCode[] }) => boolean][] =
 const pct = (k: number, n: number) => (n === 0 ? '—' : `${Math.round((100 * k) / n)}% (${k}/${n})`);
 const mean = (xs: number[]) => (xs.length === 0 ? 0 : xs.reduce((a, b) => a + b, 0) / xs.length);
 const usd = (x: number) => `$${x.toFixed(4)}`;
+const armsOf = (f: EvalFile) => f.arms ?? ['baseline', 'ours'];
+const oursTitle = (f: EvalFile) =>
+  `Ours: ≤ ${f.maxRounds} rounds${f.escalateTo ? `, ${f.escalateTo} from round ${(f.escalateAfter ?? 0) + 1}` : ''}`;
 
-function section(f: EvalFile): string {
-  const done = f.rooms.filter((r) => !r.baseline.error && !r.ours.error);
-  const n = done.length;
-  const count = (pick: Pick, test: (a: { ok: boolean; codes: IssueCode[] }) => boolean) => done.filter((r) => test(pick(r))).length;
-  const arms = (xs: ArmResult[]) => ({
-    tokens: mean(xs.map((a) => a.promptTokens + a.completionTokens)),
-    usd: mean(xs.map((a) => a.usd)),
-    seconds: mean(xs.map((a) => a.ms / 1000)),
-  });
-  const b = arms(done.map((r) => r.baseline));
-  const o = arms(done.map((r) => r.ours));
-  const verifiedSteps = (xs: ArmResult[]) => mean(xs.filter((a) => a.ok).map((a) => a.minSteps ?? 0));
+function columnsFor(files: EvalFile[]): Column[] {
+  const cols: Column[] = [];
+  const withBaseline = files.find((f) => armsOf(f).includes('baseline'));
+  if (withBaseline) {
+    cols.push({
+      title: 'Baseline (one-shot)',
+      rooms: withBaseline.rooms.filter((r) => r.baseline && !r.baseline.error),
+      attempted: withBaseline.rooms.length,
+      outcome: (r) => ({ ok: r.baseline!.ok, codes: r.baseline!.codes }),
+      arm: (r) => r.baseline!,
+    });
+  }
+  files
+    .filter((f) => armsOf(f).includes('ours'))
+    .forEach((f, k) => {
+      const rooms = f.rooms.filter((r) => r.ours && !r.ours.error);
+      const attempted = f.rooms.length;
+      if (k === 0) {
+        cols.push({
+          title: 'Ours, round 1 only',
+          rooms,
+          attempted,
+          outcome: (r) => ({ ok: r.ours!.firstCodes.length === 0, codes: r.ours!.firstCodes }),
+        });
+      }
+      cols.push({ title: oursTitle(f), rooms, attempted, outcome: (r) => ({ ok: r.ours!.ok, codes: r.ours!.codes }), arm: (r) => r.ours! });
+    });
+  return cols;
+}
 
-  const lines: string[] = [];
-  lines.push(`## ${f.model}`, '');
-  lines.push(
-    `${n} rooms (seed ${f.seed}, ${f.roomsRequested} requested${f.stopped ? `, stopped early: ${f.stopped}` : ''}), ` +
-      `3–5 furniture archetypes each, difficulty 2 (≥ 7 steps) and 3 (≥ 10 steps) alternating. ` +
-      `Run ${f.createdAt.slice(0, 10)}, ${f.totals.calls} model calls, ${usd(f.totals.usd)} total.`,
-    '',
-  );
-  lines.push('| Metric | Baseline (one-shot) | Ours, round 1 only | Ours (verifier repair, ≤ ' + f.maxRounds + ' rounds) |');
-  lines.push('|---|---|---|---|');
+function section(files: EvalFile[]): string {
+  const cols = columnsFor(files);
+  const scored = cols.filter((c) => c.arm);
+  const lines: string[] = [`## ${files[0]!.model}`, ''];
+
+  for (const f of files) {
+    const what = armsOf(f).length === 2 ? 'baseline and repair arms' : `${armsOf(f).join(' and ')} arm only`;
+    const escalation = f.escalateTo ? `, escalating to ${f.escalateTo} after round ${f.escalateAfter}` : '';
+    lines.push(
+      `- Run ${f.createdAt.slice(0, 10)}, ${what}, ≤ ${f.maxRounds} rounds${escalation}: ${f.rooms.length} rooms (seed ${f.seed}), ` +
+        `${f.totals.calls} model calls, ${usd(f.totals.usd)}${f.stopped ? `, stopped early: ${f.stopped}` : ''}.`,
+    );
+  }
+  lines.push('', 'Rooms use 3–5 furniture archetypes each; difficulty 2 (≥ 7 steps) and 3 (≥ 10 steps) alternate.', '');
+
+  const armRow = (label: string, f: (arms: ArmResult[]) => string, fallback = '—') =>
+    `| ${label} | ${cols.map((c) => (c.arm && c.rooms.length > 0 ? f(c.rooms.map(c.arm)) : fallback)).join(' | ')} |`;
+
+  lines.push(`| Metric | ${cols.map((c) => c.title).join(' | ')} |`, `|---|${cols.map(() => '---').join('|')}|`);
   for (const [label, test] of METRICS) {
-    lines.push(`| ${label} | ${pct(count(baseline, test), n)} | ${pct(count(firstRound, test), n)} | ${pct(count(ours, test), n)} |`);
+    lines.push(`| ${label} | ${cols.map((c) => pct(c.rooms.filter((r) => test(c.outcome(r))).length, c.rooms.length)).join(' | ')} |`);
   }
-  lines.push(`| Mean rounds | 1.00 | 1.00 | ${mean(done.map((r) => r.ours.rounds)).toFixed(2)} |`);
-  lines.push(
-    `| Mean shortest solution (verified rooms) | ${verifiedSteps(done.map((r) => r.baseline)).toFixed(1)} | — | ${verifiedSteps(done.map((r) => r.ours)).toFixed(1)} |`,
-  );
-  lines.push(`| Mean tokens per room | ${Math.round(b.tokens)} | — | ${Math.round(o.tokens)} |`);
-  lines.push(`| Mean cost per room | ${usd(b.usd)} | — | ${usd(o.usd)} |`);
-  lines.push(`| Mean wall time per room | ${b.seconds.toFixed(1)} s | — | ${o.seconds.toFixed(1)} s |`);
+  lines.push(armRow('Mean rounds', (a) => mean(a.map((x) => x.rounds)).toFixed(2), '1.00'));
+  lines.push(armRow('Mean shortest solution (verified rooms)', (a) => mean(a.filter((x) => x.ok).map((x) => x.minSteps ?? 0)).toFixed(1)));
+  lines.push(armRow('Mean tokens per room', (a) => String(Math.round(mean(a.map((x) => x.promptTokens + x.completionTokens))))));
+  lines.push(armRow('Mean cost per room', (a) => usd(mean(a.map((x) => x.usd)))));
+  lines.push(armRow('Mean wall time per room', (a) => `${mean(a.map((x) => x.ms / 1000)).toFixed(1)} s`));
   lines.push('');
 
-  lines.push('**By difficulty (solvable)**', '', '| Difficulty | Baseline | Ours |', '|---|---|---|');
+  lines.push('**By difficulty (solvable)**', '', `| Difficulty | ${scored.map((c) => c.title).join(' | ')} |`, `|---|${scored.map(() => '---').join('|')}|`);
   for (const d of [2, 3] as const) {
-    const sub = done.filter((r) => r.difficulty === d);
-    lines.push(`| ${d} | ${pct(sub.filter((r) => r.baseline.ok).length, sub.length)} | ${pct(sub.filter((r) => r.ours.ok).length, sub.length)} |`);
+    const cells = scored.map((c) => {
+      const sub = c.rooms.filter((r) => r.difficulty === d);
+      return pct(sub.filter((r) => c.outcome(r).ok).length, sub.length);
+    });
+    lines.push(`| ${d} | ${cells.join(' | ')} |`);
   }
   lines.push('');
 
-  lines.push('**Ours: round that produced a verified room**', '', '| Round 1 | Round 2 | Round 3 | Round 4 | Not repaired |', '|---|---|---|---|---|');
-  const at = (k: number) => done.filter((r) => r.ours.ok && r.ours.rounds === k).length;
-  lines.push(`| ${at(1)} | ${at(2)} | ${at(3)} | ${at(4)} | ${done.filter((r) => !r.ours.ok).length} |`, '');
+  const repairs = files.filter((f) => armsOf(f).includes('ours'));
+  if (repairs.length > 0) {
+    const rounds = Array.from({ length: Math.max(...repairs.map((f) => f.maxRounds)) }, (_, k) => k + 1);
+    lines.push(
+      '**Round that produced a verified room**',
+      '',
+      `| Configuration | ${rounds.map((k) => `Round ${k}`).join(' | ')} | Not repaired |`,
+      `|---|${rounds.map(() => '---').join('|')}|---|`,
+    );
+    for (const f of repairs) {
+      const done = f.rooms.filter((r) => r.ours && !r.ours.error).map((r) => r.ours!);
+      const at = (k: number) => (k > f.maxRounds ? '—' : String(done.filter((a) => a.ok && a.rounds === k).length));
+      lines.push(`| ${oursTitle(f)} | ${rounds.map(at).join(' | ')} | ${done.filter((a) => !a.ok).length} |`);
+    }
+    lines.push('');
+    for (const f of repairs.filter((f) => f.escalateTo)) {
+      const done = f.rooms.filter((r) => r.ours && !r.ours.error).map((r) => r.ours!);
+      const verified = done.filter((a) => a.ok);
+      lines.push(`With escalation, ${verified.filter((a) => a.solvedBy === f.escalateTo).length} of ${verified.length} verified rooms came from ${f.escalateTo}.`, '');
+    }
+  }
 
-  const failures = done.filter((r) => !r.baseline.ok).slice(0, 3);
+  const baseline = cols.find((c) => c.title.startsWith('Baseline'));
+  const failures = baseline ? baseline.rooms.filter((r) => !r.baseline!.ok).slice(0, 3) : [];
   if (failures.length > 0) {
     lines.push('**Sample baseline failures (verifier output, verbatim)**', '');
     for (const r of failures) {
-      const issue = r.baseline.issues[0]!;
+      const issue = r.baseline!.issues[0]!;
       lines.push(`- Room ${r.index} (${r.objects.join(', ')}; ${r.theme}): \`${issue.code}\` ${issue.detail}`);
     }
     lines.push('');
   }
-  const errors = f.rooms.length - n;
-  if (errors > 0) lines.push(`${errors} room(s) excluded because a model call failed in transport (network/HTTP/timeout).`, '');
+  for (const c of scored) {
+    if (c.attempted > c.rooms.length) {
+      lines.push(`${c.title}: ${c.attempted - c.rooms.length} room(s) excluded after a transport failure (network/HTTP/timeout).`, '');
+    }
+  }
   return lines.join('\n');
 }
 
-const files = readdirSync(resultsDir)
+const names = readdirSync(resultsDir)
   .filter((name) => /^eval-.+\.json$/.test(name))
   .sort();
-const evals = files.map((name) => JSON.parse(readFileSync(join(resultsDir, name), 'utf8')) as EvalFile);
+const evals = names
+  .map((name) => JSON.parse(readFileSync(join(resultsDir, name), 'utf8')) as EvalFile)
+  .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+const groups = new Map<string, EvalFile[]>();
+for (const f of evals) {
+  const key = `${f.model}|${f.seed}`;
+  groups.set(key, [...(groups.get(key) ?? []), f]);
+}
 
 const md = [
   '# Room designer eval',
   '',
-  'Same prompt, same model, same rooms. **Baseline** asks the model once. **Ours** sends every rejected design back with the',
-  "verifier's counterexamples (and parse errors) until it verifies or runs out of rounds. A room counts as solvable only when",
-  'the verifier proves it: exit reachable, no circular dependency, every reference valid, clue texts spell their codes, every',
-  'item used, and the shortest solution meets the difficulty floor. Rates are over rooms; a room can have several defects.',
+  'Same prompt, same rooms, same primary model. **Baseline** asks the model once. **Ours** sends every rejected design back',
+  "with the verifier's counterexamples (and parse errors) until it verifies or runs out of rounds; a configuration may hand",
+  'its later rounds to a second model, named in its column. A room counts as solvable only when the verifier proves it: exit',
+  'reachable, no circular dependency, every reference valid, clue texts spell their codes, every item used, and the shortest',
+  'solution meets the difficulty floor. Rates are over rooms; a room can have several defects.',
   '',
-  ...evals.map(section),
-  `_Rendered by \`eval/render.ts\` from ${files.map((f) => `\`results/${f}\``).join(', ')}._`,
+  ...[...groups.values()].map(section),
+  `_Rendered by \`eval/render.ts\` from ${names.map((f) => `\`results/${f}\``).join(', ')}._`,
   '',
 ].join('\n');
 
 writeFileSync(join(resultsDir, 'EVAL.md'), md);
-console.log(`wrote ${join(resultsDir, 'EVAL.md')} from ${files.length} file(s)`);
+console.log(`wrote ${join(resultsDir, 'EVAL.md')} from ${names.length} file(s)`);

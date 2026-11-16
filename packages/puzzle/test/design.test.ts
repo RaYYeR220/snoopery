@@ -77,7 +77,7 @@ describe('designRoom', () => {
 
   it('gives up after max rounds of garbage without throwing', async () => {
     const { llm, calls } = scripted(['sure! here is your room', '{"puzzle": {"containers": 3}}', '{', '']);
-    const r = await designRoom(input, llm);
+    const r = await designRoom(input, llm, { maxRounds: 4 });
     expect(r.ok).toBe(false);
     expect(r.rounds).toBe(4);
     expect(calls).toHaveLength(4);
@@ -85,6 +85,53 @@ describe('designRoom', () => {
     expect(r.transcript.map((t) => t.issues[0]!.code)).toEqual(['MALFORMED', 'MALFORMED', 'MALFORMED', 'MALFORMED']);
     expect(calls[1]!.messages.at(-1)!.content).toContain('not valid JSON');
     expect(calls[2]!.messages.at(-1)!.content).toContain('puzzle.containers');
+  });
+
+  it('allows six rounds by default', async () => {
+    const { llm, calls } = scripted(['not json']);
+    const r = await designRoom(input, llm);
+    expect(r.ok).toBe(false);
+    expect(r.rounds).toBe(6);
+    expect(calls).toHaveLength(6);
+  });
+
+  it('hands the remaining rounds to the escalation model', async () => {
+    const circular = JSON.stringify(room({ brassKeyIn: 'nightstand.drawer1' }));
+    const primary = scripted([circular]);
+    const second = scripted([JSON.stringify(room())]);
+    const r = await designRoom(input, primary.llm, { escalate: { llm: second.llm } });
+    expect(r.ok).toBe(true);
+    expect(r.rounds).toBe(4);
+    expect(primary.calls).toHaveLength(3);
+    expect(second.calls).toHaveLength(1);
+    expect(second.calls[0]!.messages.at(-2)).toEqual({ role: 'assistant', content: circular });
+    expect(second.calls[0]!.messages.at(-1)!.content).toContain('[CIRCULAR]');
+
+    const early = scripted([circular]);
+    const helper = scripted([JSON.stringify(room())]);
+    const r1 = await designRoom(input, early.llm, { escalate: { llm: helper.llm, afterRound: 1 } });
+    expect(r1.rounds).toBe(2);
+    expect(early.calls).toHaveLength(1);
+
+    const baseline = scripted([circular]);
+    const unused = scripted([JSON.stringify(room())]);
+    expect((await designRoom(input, baseline.llm, { repair: false, escalate: { llm: unused.llm, afterRound: 0 } })).rounds).toBe(1);
+    expect(unused.calls).toHaveLength(0);
+  });
+
+  it('tells the model how to lengthen a room that is too short', async () => {
+    const { llm, calls } = scripted([JSON.stringify(room()), JSON.stringify(room())]);
+    await designRoom({ ...input, difficulty: 3 }, llm, { maxRounds: 2 });
+    const feedback = calls[1]!.messages.at(-1)!.content;
+    expect(feedback).toContain('[TOO_SHORT]');
+    expect(feedback).toContain('at least 3 more steps');
+    expect(feedback).toContain('one more locked container');
+    // dresser.drawer2 is the only listed part the room does not use yet; the lamp has no openable parts.
+    expect(feedback).toContain('Unused parts you can lock: dresser.drawer2.');
+    expect(feedback).toContain('jewelry_box');
+    expect(feedback).toMatch(/inside.*dresser\.drawer/);
+    expect(feedback).not.toContain('lamp');
+    expect(feedback).toContain('Current shortest way out: open dresser.drawer1 → take note_1 → open jewelry_box.lid');
   });
 
   it('treats a part missing from the cards as UNKNOWN_REF and repairs it', async () => {

@@ -1,4 +1,4 @@
-import type { AffordanceCard } from '@snoopery/schema';
+import type { Action, AffordanceCard, AffordancePart, Puzzle } from '@snoopery/schema';
 import type { Issue } from './verify';
 
 export const DESIGN_SYSTEM = `You design escape rooms built from real furniture. The player walks around a scanned room, opens drawers, doors and lids, picks up keys and notes, and escapes through the exit door.
@@ -50,13 +50,71 @@ ${furnitureList(o.cards)}
 Design the room.`;
 }
 
-export function repairRequest(issues: Issue[], minSteps: number | null): string {
+export interface RepairContext {
+  /** Length of the current shortest way out, or null when there is none. */
+  shortest: number | null;
+  /** Difficulty floor for the shortest way out. */
+  floor: number;
+  cards: AffordanceCard[];
+  puzzle: Puzzle;
+  /** Current shortest way out, shown so the model can see which containers the player skips. */
+  proof?: Action[];
+}
+
+export function repairRequest(issues: Issue[], ctx: RepairContext): string {
   const lines = issues.map((i) => `- [${i.code}] ${i.detail}`);
-  const shortest = minSteps ? `\nThe shortest way out of your room currently takes ${minSteps} steps.` : '';
+  const shortest = ctx.shortest ? `\nThe shortest way out of your room currently takes ${ctx.shortest} steps.` : '';
+  const hint = ctx.shortest !== null && issues.some((i) => i.code === 'TOO_SHORT') ? `\n\n${lengthenHint(ctx.shortest, ctx)}` : '';
   return `A solver played your room and rejected it:
-${lines.join('\n')}${shortest}
+${lines.join('\n')}${shortest}${hint}
 
 Fix every problem and reply with the complete corrected room as one JSON object in the same shape. Keep the parts of the design that already work.`;
+}
+
+// Upper bound in m³ of what fits inside a part, by its capacity class.
+const FITS: Record<AffordancePart['capacity'], number> = { small: 0.002, medium: 0.03, large: Infinity };
+
+function lengthenHint(shortest: number, ctx: RepairContext): string {
+  const missing = ctx.floor - shortest;
+  const cards = ctx.cards.filter((card) => card.parts.length > 0);
+  const used = new Set(ctx.puzzle.containers.map((c) => `${c.objectId}.${c.part}`));
+  const free = cards.flatMap((card) => card.parts.map((part) => `${card.objectId}.${part.part}`)).filter((id) => !used.has(id));
+
+  const volume = (card: AffordanceCard) => card.sizeM[0] * card.sizeM[1] * card.sizeM[2];
+  const nests: string[] = [];
+  for (const small of [...cards].sort((a, b) => volume(a) - volume(b))) {
+    for (const host of cards) {
+      if (host === small) continue;
+      for (const part of host.parts) if (volume(small) < FITS[part.capacity]) nests.push(`${small.objectId} inside ${host.objectId}.${part.part}`);
+    }
+  }
+
+  const tips = [
+    `How to lengthen it: the shortest way out takes ${shortest} ${shortest === 1 ? 'step' : 'steps'} and must take at least ${ctx.floor}, so add at least ${missing} more ${missing === 1 ? 'step' : 'steps'} to the path the player is forced to take. Containers and items off that path do not count.`,
+    `- Add one more locked container to the chain: hide the key or clue the next lock needs inside a part that is itself locked, so the player has to open that part first (+2 steps: open it, take what is inside). ${
+      free.length > 0 ? `Unused parts you can lock: ${free.join(', ')}.` : 'Every listed part is already used, so move keys deeper into the existing chain instead.'
+    }`,
+  ];
+  if (ctx.proof && ctx.proof.length > 0) {
+    tips.splice(1, 0, `Current shortest way out: ${ctx.proof.map(describe).join(' → ')}.`);
+  }
+  if (ctx.puzzle.exit.lock.kind === 'none') {
+    tips.splice(1, 0, 'The exit has no lock, so the player can leave at once: lock it with a key or code that sits at the end of the chain.');
+  }
+  if (nests.length > 0) {
+    tips.push(
+      `- Or nest a small piece inside a locked part: set the small piece's container "inside" to that part's id so it can only be opened afterwards. Pieces that fit: ${nests.slice(0, 4).join('; ')}.`,
+    );
+  }
+  tips.push('- Or make a code lock need more clues, each hidden in a different container on the path (+1 step per extra clue).');
+  tips.push('Use only parts from the furniture list.');
+  return tips.join('\n');
+}
+
+function describe(a: Action): string {
+  if (a.type === 'open') return `open ${a.target}`;
+  if (a.type === 'take') return `take ${a.item}`;
+  return 'exit';
 }
 
 export function malformedRequest(error: string): string {

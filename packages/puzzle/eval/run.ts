@@ -1,7 +1,8 @@
 // Baseline (one-shot designer) vs ours (designer + verifier repair loop) on seeded rooms.
-// Usage: VENICE_API_KEY=... tsx eval/run.ts --model <id> [--rooms 40] [--max-usd 2] [--out path] [--concurrency 4] [--thinking on]
+// Usage: VENICE_API_KEY=... tsx eval/run.ts --model <id> [--rooms 40] [--max-usd 2] [--out path] [--concurrency 4]
+//   [--arms baseline,ours] [--max-rounds 6] [--escalate <model> [--escalate-after 3]] [--thinking on]
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { costUsd, designRoom, DESIGN_MODEL, LLMHttpError, VENICE_PRICES, veniceLLM, type ChatMessage, type IssueCode, type LLM, type LLMUsage } from '../src/index';
 import { EVAL_SEED, sampleRooms, type EvalRoom } from './rooms';
@@ -17,6 +18,8 @@ export interface ArmResult {
   firstCodes: IssueCode[];
   issues: { code: IssueCode; detail: string }[];
   minSteps: number | null;
+  /** Model whose attempt verified (differs from the primary when escalation kicked in). */
+  solvedBy?: string;
   promptTokens: number;
   completionTokens: number;
   usd: number;
@@ -30,15 +33,19 @@ export interface RoomResult {
   difficulty: 2 | 3;
   objects: string[];
   parts: number;
-  baseline: ArmResult;
-  ours: ArmResult;
+  baseline?: ArmResult;
+  ours?: ArmResult;
 }
 
 export interface EvalFile {
   model: string;
   seed: number;
   roomsRequested: number;
+  /** Absent in files written before arms could be run separately: both. */
+  arms?: Arm[];
   maxRounds: number;
+  escalateTo?: string | null;
+  escalateAfter?: number | null;
   maxTokens: number;
   thinking: boolean;
   timeoutMs: number;
@@ -49,7 +56,6 @@ export interface EvalFile {
   rooms: RoomResult[];
 }
 
-const MAX_ROUNDS = 4;
 const MAX_TOKENS = 4000;
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -66,8 +72,13 @@ const capUsd = Number(arg('max-usd') ?? process.env.EVAL_MAX_USD ?? 2);
 const concurrency = Number(arg('concurrency') ?? 4);
 const timeoutMs = Number(arg('timeout-ms') ?? 30_000);
 const thinking = arg('thinking') === 'on';
+const armNames = (arg('arms') ?? 'baseline,ours').split(',');
+const arms = armNames.filter((a): a is Arm => a === 'baseline' || a === 'ours');
+const maxRounds = Number(arg('max-rounds') ?? 6);
+const escalateTo = arg('escalate') ?? null;
+const escalateAfter = escalateTo ? Number(arg('escalate-after') ?? 3) : null;
 const out = arg('out') ?? join(resultsDir, `eval-${model}.json`);
-const rawDir = join(resultsDir, 'raw', model);
+const rawDir = join(resultsDir, 'raw', basename(out, '.json'));
 
 function required<T>(value: T | undefined, message: string): T {
   if (value === undefined || value === '') throw new Error(message);
@@ -75,6 +86,8 @@ function required<T>(value: T | undefined, message: string): T {
 }
 const apiKey = required(process.env.VENICE_API_KEY, 'VENICE_API_KEY is not set');
 const price = required(VENICE_PRICES[model], `no price for model ${model}; add it to src/models.ts`);
+if (escalateTo) required(VENICE_PRICES[escalateTo], `no price for model ${escalateTo}; add it to src/models.ts`);
+if (arms.length !== armNames.length) throw new Error(`unknown arm in ${armNames.join(',')}`);
 
 const budget = { spent: 0, reserved: 0, calls: 0, promptTokens: 0, completionTokens: 0 };
 let stopped: string | null = null;
@@ -86,6 +99,7 @@ interface Tally {
 }
 
 interface CallLog {
+  model: string;
   messages: ChatMessage[];
   reply?: string;
   error?: string;
@@ -93,7 +107,7 @@ interface CallLog {
 }
 
 /** Wraps Venice with a hard spend cap: each call reserves its worst case before it is sent. */
-function metered(tally: Tally, log: CallLog[]): LLM {
+function metered(model: string, tally: Tally, log: CallLog[]): LLM {
   return {
     async complete(messages, opts) {
       const chars = messages.reduce((n, m) => n + m.content.length, 0);
@@ -107,13 +121,13 @@ function metered(tally: Tally, log: CallLog[]): LLM {
       const llm = veniceLLM(model, apiKey, { timeoutMs, disableThinking: !thinking, onUsage: (u) => (seen.usage = u) });
       try {
         const reply = await withOverloadRetry(() => llm.complete(messages, opts));
-        log.push({ messages, reply, usage: seen.usage });
+        log.push({ model, messages, reply, usage: seen.usage });
         return reply;
       } catch (err) {
         const name = err instanceof Error ? err.name : '';
         // A timed-out call may still be billed; count it at its worst case.
         if (name === 'TimeoutError' || name === 'AbortError') budget.spent += worst;
-        log.push({ messages, error: err instanceof Error ? `${err.name}: ${err.message}` : String(err) });
+        log.push({ model, messages, error: err instanceof Error ? `${err.name}: ${err.message}` : String(err) });
         throw err;
       } finally {
         budget.reserved -= worst;
@@ -150,11 +164,12 @@ async function runArm(room: EvalRoom, arm: Arm): Promise<ArmResult> {
   const tally: Tally = { promptTokens: 0, completionTokens: 0, usd: 0 };
   const log: CallLog[] = [];
   const started = Date.now();
-  const r = await designRoom(
-    { cards: room.cards, theme: room.theme, difficulty: room.difficulty },
-    metered(tally, log),
-    { repair: arm === 'ours', maxRounds: MAX_ROUNDS, maxTokens: MAX_TOKENS },
-  );
+  const r = await designRoom({ cards: room.cards, theme: room.theme, difficulty: room.difficulty }, metered(model, tally, log), {
+    repair: arm === 'ours',
+    maxRounds,
+    maxTokens: MAX_TOKENS,
+    ...(escalateTo ? { escalate: { llm: metered(escalateTo, tally, log), afterRound: escalateAfter! } } : {}),
+  });
   const ms = Date.now() - started;
   writeFileSync(join(rawDir, `room-${String(room.index).padStart(2, '0')}-${arm}.json`), JSON.stringify({ room, arm, result: r, calls: log }, null, 2));
   const last = r.transcript.at(-1)?.issues ?? [];
@@ -165,13 +180,14 @@ async function runArm(room: EvalRoom, arm: Arm): Promise<ArmResult> {
     firstCodes: uniq((r.transcript[0]?.issues ?? []).map((i) => i.code)),
     issues: last.map((i) => ({ code: i.code, detail: i.detail })),
     minSteps: r.ok ? r.verdict!.minSteps : null,
+    ...(r.ok ? { solvedBy: log.filter((c) => c.reply !== undefined).at(-1)!.model } : {}),
     ...tally,
     ms,
     ...(r.error ? { error: r.error } : {}),
   };
 }
 
-const mark = (a: ArmResult) => (a.error ? `error(${a.error.slice(0, 40)})` : a.ok ? `ok r${a.rounds}` : `FAIL [${a.codes.join(',')}]`);
+const mark = (a: ArmResult | undefined) => (!a ? '-' : a.error ? `error(${a.error.slice(0, 40)})` : a.ok ? `ok r${a.rounds}` : `FAIL [${a.codes.join(',')}]`);
 
 async function main() {
   mkdirSync(rawDir, { recursive: true });
@@ -183,16 +199,16 @@ async function main() {
   const worker = async () => {
     while (next < rooms.length && !stopped) {
       const room = rooms[next++]!;
-      const baseline = await runArm(room, 'baseline');
-      const ours = await runArm(room, 'ours');
+      const baseline = arms.includes('baseline') ? await runArm(room, 'baseline') : undefined;
+      const ours = arms.includes('ours') ? await runArm(room, 'ours') : undefined;
       results.push({
         index: room.index,
         theme: room.theme,
         difficulty: room.difficulty,
         objects: room.cards.map((c) => c.objectId),
         parts: room.cards.reduce((n, c) => n + c.parts.length, 0),
-        baseline,
-        ours,
+        ...(baseline ? { baseline } : {}),
+        ...(ours ? { ours } : {}),
       });
       console.log(
         `room ${room.index} d${room.difficulty} | baseline ${mark(baseline)} | ours ${mark(ours)} | spent $${budget.spent.toFixed(4)}`,
@@ -205,7 +221,10 @@ async function main() {
     model,
     seed: EVAL_SEED,
     roomsRequested: roomCount,
-    maxRounds: MAX_ROUNDS,
+    arms,
+    maxRounds,
+    escalateTo,
+    escalateAfter,
     maxTokens: MAX_TOKENS,
     thinking,
     timeoutMs,

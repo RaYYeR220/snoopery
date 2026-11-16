@@ -1,0 +1,1144 @@
+{
+  "model": "qwen-3-8-flash",
+  "seed": 20261116,
+  "roomsRequested": 40,
+  "arms": [
+    "ours"
+  ],
+  "maxRounds": 6,
+  "escalateTo": "z-ai-glm-5-3-flash",
+  "escalateAfter": 3,
+  "maxTokens": 4000,
+  "thinking": false,
+  "timeoutMs": 30000,
+  "price": {
+    "input": 0.14,
+    "output": 0.49
+  },
+  "createdAt": "2026-11-16T03:06:55.367Z",
+  "stopped": null,
+  "totals": {
+    "usd": 0.06774175000000004,
+    "promptTokens": 177205,
+    "completionTokens": 86472,
+    "calls": 112
+  },
+  "rooms": [
+    {
+      "index": 0,
+      "theme": "a snowed-in mountain cabin",
+      "difficulty": 2,
+      "objects": [
+        "wardrobe",
+        "mailbox",
+        "bread_bin"
+      ],
+      "parts": 5,
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [],
+        "minSteps": 7,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 2607,
+        "completionTokens": 1340,
+        "usd": 0.00102158,
+        "ms": 23242
+      }
+    },
+    {
+      "index": 1,
+      "theme": "a pirate captain's quarters",
+      "difficulty": 3,
+      "objects": [
+        "nightstand",
+        "piano",
+        "suitcase",
+        "sideboard",
+        "filing_cabinet"
+      ],
+      "parts": 12,
+      "ours": {
+        "ok": true,
+        "rounds": 1,
+        "codes": [],
+        "firstCodes": [],
+        "issues": [],
+        "minSteps": 17,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 1096,
+        "completionTokens": 1410,
+        "usd": 0.0008443400000000001,
+        "ms": 20314
+      }
+    },
+    {
+      "index": 2,
+      "theme": "an art gallery after a heist",
+      "difficulty": 2,
+      "objects": [
+        "filing_cabinet",
+        "wardrobe",
+        "nightstand"
+      ],
+      "parts": 7,
+      "ours": {
+        "ok": true,
+        "rounds": 1,
+        "codes": [],
+        "firstCodes": [],
+        "issues": [],
+        "minSteps": 10,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 959,
+        "completionTokens": 694,
+        "usd": 0.00047432,
+        "ms": 14154
+      }
+    },
+    {
+      "index": 3,
+      "theme": "a pirate captain's quarters",
+      "difficulty": 3,
+      "objects": [
+        "wardrobe",
+        "laptop",
+        "jewelry_box",
+        "cookie_tin",
+        "mailbox"
+      ],
+      "parts": 7,
+      "ours": {
+        "ok": true,
+        "rounds": 4,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [],
+        "minSteps": 13,
+        "solvedBy": "z-ai-glm-5-3-flash",
+        "promptTokens": 6999,
+        "completionTokens": 3654,
+        "usd": 0.0027977600000000003,
+        "ms": 77470
+      }
+    },
+    {
+      "index": 4,
+      "theme": "a surprise birthday gone wrong",
+      "difficulty": 2,
+      "objects": [
+        "bread_bin",
+        "cabinet",
+        "trunk",
+        "mailbox"
+      ],
+      "parts": 6,
+      "ours": {
+        "ok": true,
+        "rounds": 1,
+        "codes": [],
+        "firstCodes": [],
+        "issues": [],
+        "minSteps": 9,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 975,
+        "completionTokens": 620,
+        "usd": 0.0004403,
+        "ms": 8606
+      }
+    },
+    {
+      "index": 5,
+      "theme": "a 1920s speakeasy",
+      "difficulty": 3,
+      "objects": [
+        "jewelry_box",
+        "filing_cabinet",
+        "desk"
+      ],
+      "parts": 5,
+      "ours": {
+        "ok": true,
+        "rounds": 4,
+        "codes": [],
+        "firstCodes": [
+          "TOO_SHORT"
+        ],
+        "issues": [],
+        "minSteps": 10,
+        "solvedBy": "z-ai-glm-5-3-flash",
+        "promptTokens": 6560,
+        "completionTokens": 3690,
+        "usd": 0.00276091,
+        "ms": 79002
+      }
+    },
+    {
+      "index": 6,
+      "theme": "a Cold War spy safehouse",
+      "difficulty": 2,
+      "objects": [
+        "cabinet",
+        "wardrobe",
+        "dresser",
+        "microwave",
+        "cookie_tin"
+      ],
+      "parts": 9,
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [],
+        "minSteps": 7,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 2657,
+        "completionTokens": 947,
+        "usd": 0.00083601,
+        "ms": 8490
+      }
+    },
+    {
+      "index": 7,
+      "theme": "a 1920s speakeasy",
+      "difficulty": 3,
+      "objects": [
+        "cabinet",
+        "nightstand",
+        "trunk",
+        "mailbox"
+      ],
+      "parts": 7,
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [],
+        "minSteps": 16,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 3164,
+        "completionTokens": 2121,
+        "usd": 0.00148225,
+        "ms": 20276
+      }
+    },
+    {
+      "index": 8,
+      "theme": "a pirate captain's quarters",
+      "difficulty": 2,
+      "objects": [
+        "trunk",
+        "mailbox",
+        "filing_cabinet"
+      ],
+      "parts": 6,
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE",
+          "UNUSED_ITEM"
+        ],
+        "issues": [],
+        "minSteps": 8,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 2570,
+        "completionTokens": 1131,
+        "usd": 0.00091399,
+        "ms": 13733
+      }
+    },
+    {
+      "index": 9,
+      "theme": "a 1920s speakeasy",
+      "difficulty": 3,
+      "objects": [
+        "dresser",
+        "birdhouse",
+        "mailbox",
+        "music_box",
+        "sideboard"
+      ],
+      "parts": 11,
+      "ours": {
+        "ok": true,
+        "rounds": 4,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [],
+        "minSteps": 12,
+        "solvedBy": "z-ai-glm-5-3-flash",
+        "promptTokens": 7459,
+        "completionTokens": 3252,
+        "usd": 0.00266416,
+        "ms": 49223
+      }
+    },
+    {
+      "index": 10,
+      "theme": "a 1920s speakeasy",
+      "difficulty": 2,
+      "objects": [
+        "cookie_tin",
+        "filing_cabinet",
+        "bread_bin",
+        "cabinet"
+      ],
+      "parts": 7,
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [],
+        "minSteps": 9,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 2695,
+        "completionTokens": 1223,
+        "usd": 0.00097657,
+        "ms": 36306
+      }
+    },
+    {
+      "index": 11,
+      "theme": "a surprise birthday gone wrong",
+      "difficulty": 3,
+      "objects": [
+        "laptop",
+        "cookie_tin",
+        "bread_bin"
+      ],
+      "parts": 3,
+      "ours": {
+        "ok": true,
+        "rounds": 5,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [],
+        "minSteps": 10,
+        "solvedBy": "z-ai-glm-5-3-flash",
+        "promptTokens": 7820,
+        "completionTokens": 4772,
+        "usd": 0.00349757,
+        "ms": 67985
+      }
+    },
+    {
+      "index": 12,
+      "theme": "a pirate captain's quarters",
+      "difficulty": 2,
+      "objects": [
+        "sideboard",
+        "wardrobe",
+        "dresser",
+        "mailbox"
+      ],
+      "parts": 11,
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [],
+        "minSteps": 9,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 2835,
+        "completionTokens": 1244,
+        "usd": 0.00100646,
+        "ms": 29515
+      }
+    },
+    {
+      "index": 13,
+      "theme": "an art gallery after a heist",
+      "difficulty": 3,
+      "objects": [
+        "laptop",
+        "mailbox",
+        "toolbox",
+        "piano"
+      ],
+      "parts": 6,
+      "ours": {
+        "ok": true,
+        "rounds": 6,
+        "codes": [],
+        "firstCodes": [
+          "TOO_SHORT"
+        ],
+        "issues": [],
+        "minSteps": 10,
+        "solvedBy": "z-ai-glm-5-3-flash",
+        "promptTokens": 9911,
+        "completionTokens": 4242,
+        "usd": 0.00354443,
+        "ms": 58999
+      }
+    },
+    {
+      "index": 14,
+      "theme": "a Cold War spy safehouse",
+      "difficulty": 2,
+      "objects": [
+        "bread_bin",
+        "music_box",
+        "jewelry_box",
+        "toolbox"
+      ],
+      "parts": 4,
+      "ours": {
+        "ok": true,
+        "rounds": 3,
+        "codes": [],
+        "firstCodes": [
+          "UNKNOWN_REF",
+          "CLUE_MISSING_CODE",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [],
+        "minSteps": 8,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 4276,
+        "completionTokens": 1628,
+        "usd": 0.0013963600000000001,
+        "ms": 75064
+      }
+    },
+    {
+      "index": 15,
+      "theme": "a pirate captain's quarters",
+      "difficulty": 3,
+      "objects": [
+        "safe",
+        "wardrobe",
+        "dresser"
+      ],
+      "parts": 6,
+      "ours": {
+        "ok": true,
+        "rounds": 3,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [],
+        "minSteps": 13,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 4787,
+        "completionTokens": 2672,
+        "usd": 0.0019794599999999997,
+        "ms": 42351
+      }
+    },
+    {
+      "index": 16,
+      "theme": "a 1920s speakeasy",
+      "difficulty": 2,
+      "objects": [
+        "microwave",
+        "suitcase",
+        "birdhouse",
+        "cookie_tin",
+        "sideboard"
+      ],
+      "parts": 8,
+      "ours": {
+        "ok": true,
+        "rounds": 4,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "TOO_SHORT"
+        ],
+        "issues": [],
+        "minSteps": 12,
+        "solvedBy": "z-ai-glm-5-3-flash",
+        "promptTokens": 7893,
+        "completionTokens": 3417,
+        "usd": 0.00281284,
+        "ms": 49703
+      }
+    },
+    {
+      "index": 17,
+      "theme": "a 1920s speakeasy",
+      "difficulty": 3,
+      "objects": [
+        "filing_cabinet",
+        "mailbox",
+        "laptop"
+      ],
+      "parts": 6,
+      "ours": {
+        "ok": true,
+        "rounds": 6,
+        "codes": [],
+        "firstCodes": [
+          "MALFORMED"
+        ],
+        "issues": [],
+        "minSteps": 11,
+        "solvedBy": "z-ai-glm-5-3-flash",
+        "promptTokens": 10504,
+        "completionTokens": 4804,
+        "usd": 0.0039008800000000002,
+        "ms": 49408
+      }
+    },
+    {
+      "index": 18,
+      "theme": "a surprise birthday gone wrong",
+      "difficulty": 2,
+      "objects": [
+        "mailbox",
+        "trunk",
+        "filing_cabinet",
+        "suitcase"
+      ],
+      "parts": 7,
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [],
+        "minSteps": 9,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 2714,
+        "completionTokens": 1250,
+        "usd": 0.0009924600000000001,
+        "ms": 28382
+      }
+    },
+    {
+      "index": 19,
+      "theme": "a snowed-in mountain cabin",
+      "difficulty": 3,
+      "objects": [
+        "toolbox",
+        "microwave",
+        "mailbox",
+        "trunk"
+      ],
+      "parts": 5,
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "MISSING_CLUE",
+          "CLUE_MISSING_CODE",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "EXIT_UNREACHABLE",
+          "UNUSED_ITEM"
+        ],
+        "issues": [],
+        "minSteps": 12,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 3263,
+        "completionTokens": 1845,
+        "usd": 0.0013608700000000001,
+        "ms": 27704
+      }
+    },
+    {
+      "index": 20,
+      "theme": "a surprise birthday gone wrong",
+      "difficulty": 2,
+      "objects": [
+        "desk",
+        "toolbox",
+        "suitcase"
+      ],
+      "parts": 3,
+      "ours": {
+        "ok": true,
+        "rounds": 4,
+        "codes": [],
+        "firstCodes": [
+          "MALFORMED"
+        ],
+        "issues": [],
+        "minSteps": 7,
+        "solvedBy": "z-ai-glm-5-3-flash",
+        "promptTokens": 5428,
+        "completionTokens": 1880,
+        "usd": 0.00169924,
+        "ms": 22937
+      }
+    },
+    {
+      "index": 21,
+      "theme": "an art gallery after a heist",
+      "difficulty": 3,
+      "objects": [
+        "birdhouse",
+        "piano",
+        "trunk",
+        "toolbox"
+      ],
+      "parts": 5,
+      "ours": {
+        "ok": true,
+        "rounds": 4,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [],
+        "minSteps": 11,
+        "solvedBy": "z-ai-glm-5-3-flash",
+        "promptTokens": 6628,
+        "completionTokens": 2751,
+        "usd": 0.00229864,
+        "ms": 37288
+      }
+    },
+    {
+      "index": 22,
+      "theme": "a Cold War spy safehouse",
+      "difficulty": 2,
+      "objects": [
+        "jewelry_box",
+        "music_box",
+        "mailbox",
+        "piano",
+        "bread_bin"
+      ],
+      "parts": 7,
+      "ours": {
+        "ok": true,
+        "rounds": 3,
+        "codes": [],
+        "firstCodes": [
+          "MISSING_CLUE",
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [],
+        "minSteps": 10,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 5451,
+        "completionTokens": 2764,
+        "usd": 0.0021175,
+        "ms": 39895
+      }
+    },
+    {
+      "index": 23,
+      "theme": "a space station crew cabin",
+      "difficulty": 3,
+      "objects": [
+        "sideboard",
+        "safe",
+        "laptop",
+        "mailbox"
+      ],
+      "parts": 8,
+      "ours": {
+        "ok": true,
+        "rounds": 3,
+        "codes": [],
+        "firstCodes": [
+          "MALFORMED"
+        ],
+        "issues": [],
+        "minSteps": 11,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 4878,
+        "completionTokens": 2337,
+        "usd": 0.0018280500000000003,
+        "ms": 25325
+      }
+    },
+    {
+      "index": 24,
+      "theme": "an art gallery after a heist",
+      "difficulty": 2,
+      "objects": [
+        "nightstand",
+        "bread_bin",
+        "music_box",
+        "microwave",
+        "cookie_tin"
+      ],
+      "parts": 6,
+      "ours": {
+        "ok": true,
+        "rounds": 4,
+        "codes": [],
+        "firstCodes": [
+          "MALFORMED"
+        ],
+        "issues": [],
+        "minSteps": 9,
+        "solvedBy": "z-ai-glm-5-3-flash",
+        "promptTokens": 6783,
+        "completionTokens": 2914,
+        "usd": 0.0024016600000000003,
+        "ms": 23202
+      }
+    },
+    {
+      "index": 25,
+      "theme": "a mad inventor's workshop",
+      "difficulty": 3,
+      "objects": [
+        "filing_cabinet",
+        "music_box",
+        "microwave",
+        "birdhouse"
+      ],
+      "parts": 6,
+      "ours": {
+        "ok": true,
+        "rounds": 4,
+        "codes": [],
+        "firstCodes": [
+          "UNUSED_ITEM",
+          "TOO_SHORT"
+        ],
+        "issues": [],
+        "minSteps": 11,
+        "solvedBy": "z-ai-glm-5-3-flash",
+        "promptTokens": 7393,
+        "completionTokens": 3630,
+        "usd": 0.00284493,
+        "ms": 36018
+      }
+    },
+    {
+      "index": 26,
+      "theme": "an art gallery after a heist",
+      "difficulty": 2,
+      "objects": [
+        "nightstand",
+        "suitcase",
+        "sideboard",
+        "laptop"
+      ],
+      "parts": 8,
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [],
+        "minSteps": 7,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 2573,
+        "completionTokens": 965,
+        "usd": 0.00083307,
+        "ms": 14727
+      }
+    },
+    {
+      "index": 27,
+      "theme": "an art gallery after a heist",
+      "difficulty": 3,
+      "objects": [
+        "music_box",
+        "mailbox",
+        "wardrobe",
+        "bread_bin",
+        "birdhouse"
+      ],
+      "parts": 7,
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [],
+        "minSteps": 11,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 2865,
+        "completionTokens": 1493,
+        "usd": 0.0011326700000000001,
+        "ms": 22194
+      }
+    },
+    {
+      "index": 28,
+      "theme": "a space station crew cabin",
+      "difficulty": 2,
+      "objects": [
+        "music_box",
+        "sideboard",
+        "safe",
+        "laptop",
+        "wardrobe"
+      ],
+      "parts": 9,
+      "ours": {
+        "ok": true,
+        "rounds": 1,
+        "codes": [],
+        "firstCodes": [],
+        "issues": [],
+        "minSteps": 7,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 1042,
+        "completionTokens": 690,
+        "usd": 0.00048398,
+        "ms": 11188
+      }
+    },
+    {
+      "index": 29,
+      "theme": "a space station crew cabin",
+      "difficulty": 3,
+      "objects": [
+        "jewelry_box",
+        "cookie_tin",
+        "cabinet"
+      ],
+      "parts": 4,
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [],
+        "minSteps": 10,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 2621,
+        "completionTokens": 1366,
+        "usd": 0.0010362799999999999,
+        "ms": 15136
+      }
+    },
+    {
+      "index": 30,
+      "theme": "a Victorian detective's study",
+      "difficulty": 2,
+      "objects": [
+        "desk",
+        "birdhouse",
+        "sideboard",
+        "microwave",
+        "cabinet"
+      ],
+      "parts": 9,
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "MISSING_CLUE",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "UNUSED_ITEM",
+          "TOO_SHORT"
+        ],
+        "issues": [],
+        "minSteps": 10,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 3263,
+        "completionTokens": 1309,
+        "usd": 0.00109823,
+        "ms": 31175
+      }
+    },
+    {
+      "index": 31,
+      "theme": "a mad inventor's workshop",
+      "difficulty": 3,
+      "objects": [
+        "music_box",
+        "laptop",
+        "suitcase",
+        "wardrobe"
+      ],
+      "parts": 5,
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE",
+          "CIRCULAR",
+          "UNREACHABLE_CONTAINER",
+          "UNREACHABLE_ITEM",
+          "EXIT_UNREACHABLE",
+          "UNUSED_ITEM"
+        ],
+        "issues": [],
+        "minSteps": 12,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 3233,
+        "completionTokens": 1822,
+        "usd": 0.0013454,
+        "ms": 20474
+      }
+    },
+    {
+      "index": 32,
+      "theme": "a surprise birthday gone wrong",
+      "difficulty": 2,
+      "objects": [
+        "nightstand",
+        "bread_bin",
+        "jewelry_box",
+        "desk",
+        "birdhouse"
+      ],
+      "parts": 6,
+      "ours": {
+        "ok": true,
+        "rounds": 4,
+        "codes": [],
+        "firstCodes": [
+          "TOO_SHORT"
+        ],
+        "issues": [],
+        "minSteps": 10,
+        "solvedBy": "z-ai-glm-5-3-flash",
+        "promptTokens": 6317,
+        "completionTokens": 2508,
+        "usd": 0.0021387000000000003,
+        "ms": 36681
+      }
+    },
+    {
+      "index": 33,
+      "theme": "a Victorian detective's study",
+      "difficulty": 3,
+      "objects": [
+        "birdhouse",
+        "dresser",
+        "microwave",
+        "nightstand"
+      ],
+      "parts": 7,
+      "ours": {
+        "ok": true,
+        "rounds": 6,
+        "codes": [],
+        "firstCodes": [
+          "MALFORMED"
+        ],
+        "issues": [],
+        "minSteps": 10,
+        "solvedBy": "z-ai-glm-5-3-flash",
+        "promptTokens": 11249,
+        "completionTokens": 6346,
+        "usd": 0.004783609999999999,
+        "ms": 85353
+      }
+    },
+    {
+      "index": 34,
+      "theme": "an art gallery after a heist",
+      "difficulty": 2,
+      "objects": [
+        "desk",
+        "music_box",
+        "wardrobe",
+        "mailbox"
+      ],
+      "parts": 6,
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "TOO_SHORT"
+        ],
+        "issues": [],
+        "minSteps": 8,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 3005,
+        "completionTokens": 1444,
+        "usd": 0.00112826,
+        "ms": 16486
+      }
+    },
+    {
+      "index": 35,
+      "theme": "a mad inventor's workshop",
+      "difficulty": 3,
+      "objects": [
+        "toolbox",
+        "wardrobe",
+        "mailbox",
+        "music_box"
+      ],
+      "parts": 6,
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "MISSING_KEY",
+          "CLUE_MISSING_CODE",
+          "EXIT_UNREACHABLE"
+        ],
+        "issues": [],
+        "minSteps": 11,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 2910,
+        "completionTokens": 1652,
+        "usd": 0.0012168799999999998,
+        "ms": 44386
+      }
+    },
+    {
+      "index": 36,
+      "theme": "a mad inventor's workshop",
+      "difficulty": 2,
+      "objects": [
+        "safe",
+        "laptop",
+        "cabinet",
+        "suitcase"
+      ],
+      "parts": 5,
+      "ours": {
+        "ok": true,
+        "rounds": 1,
+        "codes": [],
+        "firstCodes": [],
+        "issues": [],
+        "minSteps": 9,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 958,
+        "completionTokens": 597,
+        "usd": 0.00042665,
+        "ms": 8674
+      }
+    },
+    {
+      "index": 37,
+      "theme": "a Cold War spy safehouse",
+      "difficulty": 3,
+      "objects": [
+        "sideboard",
+        "nightstand",
+        "trunk",
+        "dresser",
+        "suitcase"
+      ],
+      "parts": 11,
+      "ours": {
+        "ok": true,
+        "rounds": 3,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE",
+          "TOO_SHORT"
+        ],
+        "issues": [],
+        "minSteps": 10,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 5120,
+        "completionTokens": 2094,
+        "usd": 0.0017428600000000002,
+        "ms": 32578
+      }
+    },
+    {
+      "index": 38,
+      "theme": "a Victorian detective's study",
+      "difficulty": 2,
+      "objects": [
+        "birdhouse",
+        "toolbox",
+        "cookie_tin",
+        "filing_cabinet",
+        "bread_bin"
+      ],
+      "parts": 7,
+      "ours": {
+        "ok": true,
+        "rounds": 1,
+        "codes": [],
+        "firstCodes": [],
+        "issues": [],
+        "minSteps": 9,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 1022,
+        "completionTokens": 633,
+        "usd": 0.00045325,
+        "ms": 21319
+      }
+    },
+    {
+      "index": 39,
+      "theme": "a 1920s speakeasy",
+      "difficulty": 3,
+      "objects": [
+        "piano",
+        "bread_bin",
+        "mailbox",
+        "safe"
+      ],
+      "parts": 6,
+      "ours": {
+        "ok": true,
+        "rounds": 2,
+        "codes": [],
+        "firstCodes": [
+          "CLUE_MISSING_CODE"
+        ],
+        "issues": [],
+        "minSteps": 10,
+        "solvedBy": "qwen-3-8-flash",
+        "promptTokens": 2722,
+        "completionTokens": 1321,
+        "usd": 0.00102837,
+        "ms": 19107
+      }
+    }
+  ]
+}

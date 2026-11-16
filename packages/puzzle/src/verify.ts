@@ -96,7 +96,7 @@ export function verify(p: Puzzle, opts: VerifyOptions = {}): Verdict {
   const proof = exitOk ? shortestProof(m, progressOf(m, initialState())) : null;
   const minSteps = proof?.length ?? 0;
   if (proof && opts.minSteps !== undefined && minSteps < opts.minSteps) {
-    issues.push({ code: 'TOO_SHORT', detail: `the shortest solution is ${minSteps} steps; this room needs at least ${opts.minSteps}`, ids: [] });
+    issues.push({ code: 'TOO_SHORT', detail: `the shortest solution is ${minSteps} ${minSteps === 1 ? 'step' : 'steps'}; this room needs at least ${opts.minSteps}`, ids: [] });
   }
 
   return { solvable: proof !== null && issues.length === 0, minSteps, proof: proof ?? [], issues, warnings };
