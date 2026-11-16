@@ -64,7 +64,8 @@ function tokenMatches(token: unknown, expectedHash: string | undefined): boolean
 
 export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
   const { ctx } = deps;
-  const app = Fastify({ logger: false, bodyLimit: 2 * 1024 * 1024 });
+  // One proxy hop (Cloud Run's front end) so rate limits key on the real client address.
+  const app = Fastify({ logger: false, bodyLimit: 2 * 1024 * 1024, trustProxy: (_address: string, hop: number) => hop < 1 });
   await app.register(cors, { origin: true, allowedHeaders: ['content-type', 'x-edit-token', 'x-tick-token'] });
   await app.register(rateLimit, { max: 120, timeWindow: '1 minute' });
   const costly = { config: { rateLimit: { max: 12, timeWindow: '1 hour' } } };
@@ -72,7 +73,21 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
 
   // Media handed to the pipeline must come from our own signed uploads.
   const uploadsPrefix = ctx.blobs.publicUrl('uploads/');
-  const ownUpload = z.string().url().refine((u) => u.startsWith(uploadsPrefix), 'upload the file first via /uploads/sign');
+  const uploadsUrl = new URL(uploadsPrefix);
+  const escaped = uploadsUrl.pathname.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const uploadPath = new RegExp(`^${escaped}[A-Za-z0-9_-]{10}\\.(jpg|jpeg|png|webp|mp4|mov|insv)$`);
+  const ownUpload = z
+    .string()
+    .max(300)
+    .refine((u) => {
+      if (/[\\%]|\.\./.test(u)) return false;
+      try {
+        const url = new URL(u);
+        return url.origin === uploadsUrl.origin && !url.search && !url.hash && uploadPath.test(url.pathname);
+      } catch {
+        return false;
+      }
+    }, 'upload the file first via /uploads/sign');
   const editToken = (req: { headers: Record<string, unknown> }) => req.headers['x-edit-token'];
 
   const notFound = (what: string) => ({ error: `${what} not found` });

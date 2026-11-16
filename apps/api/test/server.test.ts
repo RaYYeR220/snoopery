@@ -61,13 +61,21 @@ describe('api', () => {
 
   it('only accepts photos that were uploaded through the signed-upload path', async () => {
     const { app } = await setup();
-    const res = await app.inject({ method: 'POST', url: '/objects', payload: { photoUrl: 'http://169.254.169.254/latest/meta-data' } });
-    expect(res.statusCode).toBe(400);
+    for (const photoUrl of [
+      'http://169.254.169.254/latest/meta-data',
+      'https://blobs.test/uploads/../docs/jobs/_active.json',
+      'https://blobs.test/uploads/%2e%2e/abcdefghij.jpg',
+      'https://blobs.test/uploads/abcdefghij.jpg?x=1',
+      'https://blobs.test.evil.com/uploads/abcdefghij.jpg',
+    ]) {
+      const res = await app.inject({ method: 'POST', url: '/objects', payload: { photoUrl } });
+      expect(res.statusCode, photoUrl).toBe(400);
+    }
   });
 
   it('pauses generation endpoints when credits are unavailable', async () => {
     const { app } = await setup(true);
-    const res = await app.inject({ method: 'POST', url: '/objects', payload: { photoUrl: 'https://blobs.test/uploads/a.jpg' } });
+    const res = await app.inject({ method: 'POST', url: '/objects', payload: { photoUrl: 'https://blobs.test/uploads/abcdefghij.jpg' } });
     expect(res.statusCode).toBe(503);
     expect(res.json().generation).toBe('paused');
   });
