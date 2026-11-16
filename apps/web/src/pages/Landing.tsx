@@ -36,10 +36,9 @@ function useLang(): [Lang, (l: Lang) => void] {
 /** The landing page; the hero is swappable so the art direction can change without touching the rest. */
 export function Landing({ hero }: { hero?: ReactNode }) {
   const [lang, setLang] = useLang();
-  const look = new URLSearchParams(location.search).get('hero') === 'b' ? 'b' : 'a';
   return (
     <main className="sn-landing">
-      {hero ?? <TorchHero look={look} lang={lang} onLang={setLang} />}
+      {hero ?? <TorchHero lang={lang} onLang={setLang} />}
 
       <section className="sn-band" id="how">
         <ol className="sn-verbs">

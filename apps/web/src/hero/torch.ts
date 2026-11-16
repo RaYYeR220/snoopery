@@ -2,10 +2,7 @@
 // the solver's way out) restores true colour; the furniture it finds lights up on its joint and opens.
 // Plain 2D canvas: one ImageData splat pass per frame, depth-sorted with a counting sort.
 
-export type HeroLook = 'a' | 'b';
-
 export interface TorchOptions {
-  look: HeroLook;
   accent: [number, number, number];
   ground: [number, number, number];
   onStep?: (step: number) => void;
@@ -511,7 +508,6 @@ export class TorchScene {
     this.OK = new Uint8Array(N);
     this.ORDER = new Uint32Array(N);
     this.BK = new Uint16Array(N);
-    const look = this.opts.look;
     for (let i = 0; i < N; i++) {
       const q = pts[i]!;
       this.PX[i] = q[0]!;
@@ -525,18 +521,10 @@ export class TorchScene {
       this.CG[i] = Math.min(255, g * 1.08);
       this.CB[i] = Math.min(255, b * 1.08);
       this.CA[i] = q[7]!;
-      if (look === 'a') {
-        // Look A: the dark room is a warm neutral grey; only the torch brings colour back.
-        const l = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-        this.DR[i] = 20 + l * 40;
-        this.DG[i] = 20 + l * 39;
-        this.DB[i] = 19 + l * 36;
-      } else {
-        // Look B: the room keeps a dim version of its own colour.
-        this.DR[i] = r * 0.3 + 8;
-        this.DG[i] = g * 0.3 + 8;
-        this.DB[i] = b * 0.3 + 8;
-      }
+      // The room keeps a dim version of its own colour; the torch brings it back to full.
+      this.DR[i] = r * 0.3 + 8;
+      this.DG[i] = g * 0.3 + 8;
+      this.DB[i] = b * 0.3 + 8;
     }
     const nsO = FURN.nightstand;
     const jbO = FURN.jbox;
@@ -849,7 +837,7 @@ export class TorchScene {
     ctx.fillStyle = g;
     ctx.fillRect(torch.x - torch.r * 1.1, torch.y - torch.r * 1.1, torch.r * 2.2, torch.r * 2.2);
     ctx.globalCompositeOperation = 'source-over';
-    ctx.strokeStyle = this.opts.look === 'a' ? this.accentA(0.16) : 'rgba(242,241,238,.10)';
+    ctx.strokeStyle = 'rgba(242,241,238,.10)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.arc(torch.x, torch.y, torch.r * 0.96, 0, 7);

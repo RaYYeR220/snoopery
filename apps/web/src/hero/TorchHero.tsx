@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { loadRoomPoints, TorchScene, type HeroLook } from './torch';
+import { loadRoomPoints, TorchScene } from './torch';
 
 const COPY = {
   en: {
@@ -49,7 +49,7 @@ function Odometer({ value }: { value: number }) {
   );
 }
 
-export function TorchHero({ look, lang, onLang }: { look: HeroLook; lang: Lang; onLang: (l: Lang) => void }) {
+export function TorchHero({ lang, onLang }: { lang: Lang; onLang: (l: Lang) => void }) {
   const hero = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -62,7 +62,6 @@ export function TorchHero({ look, lang, onLang }: { look: HeroLook; lang: Lang; 
     const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
     let last = -1;
     const scene = new TorchScene(stage.current, canvas.current, {
-      look,
       accent: LIME,
       ground: GROUND,
       reduceMotion,
@@ -83,7 +82,7 @@ export function TorchHero({ look, lang, onLang }: { look: HeroLook; lang: Lang; 
       alive = false;
       scene.dispose();
     };
-  }, [look]);
+  }, []);
 
   return (
     <section ref={hero} className={`th-hero ${ready ? 'is-ready' : ''}`} aria-labelledby="th-h">
