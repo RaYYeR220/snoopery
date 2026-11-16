@@ -44,6 +44,8 @@ export interface Runtime {
   parts(): PartRef[];
   partPosition(objectId: string, part: string): Vec3 | null;
   highlight(target: PartRef | null): void;
+  /** Screen position (client px) of a world point, or null when it is behind the camera. */
+  project(p: Vec3): [number, number] | null;
   controls: LookController;
   pose(): Pose;
   snapshot(type?: string): string;
@@ -103,7 +105,7 @@ export function createRuntime(container: HTMLElement, events: RuntimeEvents = {}
     const r = container.getBoundingClientRect();
     ndc.set(((cx - r.left) / r.width) * 2 - 1, -((cy - r.top) / r.height) * 2 + 1);
     raycaster.setFromCamera(ndc, camera);
-    const hits = raycaster.intersectObjects([...objectRoots.values()], true);
+    const hits = raycaster.intersectObjects([...objectRoots.values()], true).sort((a, b) => a.distance - b.distance);
     for (const h of hits) {
       let o: Object3D | null = h.object;
       while (o) {
@@ -144,7 +146,7 @@ export function createRuntime(container: HTMLElement, events: RuntimeEvents = {}
 
   const tweens = new Set<{ key: string; from: number; to: number; t: number; dur: number; done: () => void }>();
   const applyJoint = (p: PartState) => {
-    tmpJ.elements = jointMatrix(p.joint, p.t);
+    tmpJ.fromArray(jointMatrix(p.joint, p.t) as unknown as number[]);
     tmpM.multiplyMatrices(tmpJ, p.rest);
     tmpM.decompose(p.node.position, p.node.quaternion, p.node.scale);
     p.node.setMatrixDirty();
@@ -255,7 +257,7 @@ export function createRuntime(container: HTMLElement, events: RuntimeEvents = {}
       const data = await SplatLoader.parseSplatData(formatOf(doc.splat.format), doc.splat.url, SplatLoader.SplatPackType.Compressed);
       const splat = (await SplatUtils.createSplat(data)) as unknown as Object3D;
       const m = new Matrix4();
-      m.elements = new Float32Array(doc.splat.transform);
+      m.fromArray(doc.splat.transform);
       m.decompose(splat.position, splat.quaternion, splat.scale);
       splat.updateMatrixWorld(true);
       scene.add(splat);
@@ -319,6 +321,12 @@ export function createRuntime(container: HTMLElement, events: RuntimeEvents = {}
       return [c.x, c.y, c.z];
     },
     highlight,
+    project(p) {
+      const v = new Vector3(p[0], p[1], p[2]).project(camera);
+      if (v.z > 1) return null;
+      const r = container.getBoundingClientRect();
+      return [r.left + ((v.x + 1) / 2) * r.width, r.top + ((1 - v.y) / 2) * r.height];
+    },
     pose: () => controls.pose,
     snapshot(type = 'image/jpeg') {
       viewer.render();
