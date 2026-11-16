@@ -148,6 +148,7 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
   });
 
   app.post('/characters', costly, async (req, reply) => {
+    if (!operator(req)) return reply.code(403).send({ error: 'operator only' });
     const body = z.object({ prompt: z.string().min(3).max(300), style: z.string().optional() }).safeParse(req.body);
     if (!body.success) return reply.code(400).send({ error: body.error.message });
     if (generationGuard(reply)) return;
@@ -158,7 +159,14 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
     return { characterId, jobId: job.id, jobToken };
   });
 
+  // Shared library assets (item models, the solution figure) are operator-only.
+  const operator = (req: { headers: Record<string, unknown> }) => {
+    const t = req.headers['x-tick-token'];
+    return typeof t === 'string' && t.length === deps.tickToken.length && timingSafeEqual(Buffer.from(t), Buffer.from(deps.tickToken));
+  };
+
   app.post('/props', costly, async (req, reply) => {
+    if (!operator(req)) return reply.code(403).send({ error: 'operator only' });
     const body = z.object({ kind: z.enum(['key', 'clue', 'prop']), prompt: z.string().min(3).max(300) }).safeParse(req.body);
     if (!body.success) return reply.code(400).send({ error: body.error.message });
     if (generationGuard(reply)) return;
@@ -198,7 +206,7 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
   });
 
   app.post('/tick', async (req, reply) => {
-    if (req.headers['x-tick-token'] !== deps.tickToken) return reply.code(401).send({ error: 'bad token' });
+    if (!operator(req)) return reply.code(401).send({ error: 'bad token' });
     return tickAll(ctx);
   });
 

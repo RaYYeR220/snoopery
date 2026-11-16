@@ -74,6 +74,13 @@ describe('api', () => {
     }
   });
 
+  it('keeps shared library assets operator-only', async () => {
+    const { app } = await setup();
+    expect((await app.inject({ method: 'POST', url: '/props', payload: { kind: 'key', prompt: 'a brass key' } })).statusCode).toBe(403);
+    expect((await app.inject({ method: 'POST', url: '/characters', payload: { prompt: 'a detective' } })).statusCode).toBe(403);
+    expect((await app.inject({ method: 'POST', url: '/characters', payload: { prompt: 'a detective' }, headers: { 'x-tick-token': 'wrong' } })).statusCode).toBe(403);
+  });
+
   it('pauses generation endpoints when credits are unavailable', async () => {
     const { app } = await setup(true);
     const res = await app.inject({ method: 'POST', url: '/objects', payload: { photoUrl: 'https://blobs.test/uploads/abcdefghij.jpg' } });

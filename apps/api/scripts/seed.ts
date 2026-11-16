@@ -19,8 +19,12 @@ if (!api) throw new Error('pass --api <url> or set SNOOPERY_API');
 
 const TYPES: Record<string, string> = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.mp4': 'video/mp4', '.mov': 'video/quicktime' };
 
+// Operator token (the API's TICK_TOKEN) is needed for shared library assets: --character and --prop.
+const operatorToken = process.env.SNOOPERY_OPERATOR_TOKEN ?? '';
+
 async function call<T>(path: string, body?: unknown): Promise<T> {
-  const res = await fetch(`${api}${path}`, { method: body ? 'POST' : 'GET', headers: body ? { 'content-type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined });
+  const headers: Record<string, string> = { ...(body ? { 'content-type': 'application/json' } : {}), ...(operatorToken ? { 'x-tick-token': operatorToken } : {}) };
+  const res = await fetch(`${api}${path}`, { method: body ? 'POST' : 'GET', headers, body: body ? JSON.stringify(body) : undefined });
   const json = (await res.json().catch(() => ({}))) as T & { error?: string };
   if (!res.ok) throw new Error(`${path}: HTTP ${res.status} ${json.error ?? ''}`);
   return json;
