@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
+import { TorchHero, type Lang } from '../hero/TorchHero';
 
 const STEPS = [
   { verb: 'Film', text: 'Walk your room with a phone for a minute. Aholo Reality rebuilds it as a 3D splat you can walk through.' },
@@ -7,32 +8,40 @@ const STEPS = [
   { verb: 'Share', text: 'Send the link. Your friend snoops through your actual room, one drawer at a time.' },
 ];
 
-/** The page below the hero. The hero itself is passed in so the art direction can change without touching the rest. */
+function useLang(): [Lang, (l: Lang) => void] {
+  const initial = (() => {
+    try {
+      const saved = localStorage.getItem('snoopery.lang');
+      if (saved === 'en' || saved === 'zh') return saved;
+    } catch {
+      /* storage unavailable */
+    }
+    return navigator.language?.toLowerCase().startsWith('zh') ? 'zh' : 'en';
+  })();
+  const [lang, setLang] = useState<Lang>(initial);
+  return [
+    lang,
+    (l) => {
+      setLang(l);
+      try {
+        localStorage.setItem('snoopery.lang', l);
+      } catch {
+        /* ignore */
+      }
+      document.documentElement.lang = l === 'zh' ? 'zh-CN' : 'en';
+    },
+  ];
+}
+
+/** The landing page; the hero is swappable so the art direction can change without touching the rest. */
 export function Landing({ hero }: { hero?: ReactNode }) {
+  const [lang, setLang] = useLang();
+  const look = new URLSearchParams(location.search).get('hero') === 'b' ? 'b' : 'a';
   return (
     <main className="sn-landing">
-      {hero ?? (
-        <header className="sn-hero-plain">
-          <nav className="sn-doc-nav">
-            <a href="/" className="sn-logo">Snoopery</a>
-            <a href="/rooms">Rooms</a>
-            <a href="/docs">Developers</a>
-            <a href="/studio">Make a room</a>
-          </nav>
-          <h1>
-            Film your room.
-            <br />
-            Every drawer opens.
-          </h1>
-          <p>Snoopery turns a phone video and a few photos of your furniture into a 3D escape room where drawers, lids and doors really open. An AI hides the key; a solver proves there's a way out.</p>
-          <div className="sn-row">
-            <a className="sn-cta" href="/rooms">Snoop a room</a>
-            <a className="sn-cta-ghost" href="/studio">Make yours</a>
-          </div>
-        </header>
-      )}
+      {hero ?? <TorchHero look={look} lang={lang} onLang={setLang} />}
 
-      <section className="sn-band">
+      <section className="sn-band" id="how">
         <ol className="sn-verbs">
           {STEPS.map((s, i) => (
             <li key={s.verb}>

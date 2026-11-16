@@ -1,0 +1,69 @@
+.th-hero { position: relative; height: 100vh; height: 100svh; min-height: 720px; max-height: 1200px; overflow: hidden; isolation: isolate; background: var(--bg); }
+.th-hero::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 30; opacity: .055;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E"); background-size: 200px 200px; }
+.th-stage { position: absolute; inset: 0; z-index: 0; }
+.th-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.th-wrap { width: 100%; max-width: 1304px; margin: 0 auto; padding: 0 32px; }
+
+.th-nav { position: absolute; top: 0; left: 0; right: 0; z-index: 20; }
+.th-nav::before { content: ""; position: absolute; inset: 0 0 -40px 0; pointer-events: none; z-index: -1; background: linear-gradient(180deg, rgba(10,10,11,.92), rgba(10,10,11,0)); }
+.th-nav .th-wrap { display: flex; align-items: center; height: 72px; gap: 28px; }
+.th-brand { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 600; font-size: 18px; letter-spacing: -.01em; color: var(--fg); text-decoration: none; }
+.th-links { display: flex; gap: 26px; margin-left: auto; font-size: 14px; }
+.th-links a { color: var(--muted); text-decoration: none; transition: color .2s; }
+.th-links a:hover { color: var(--fg); }
+.th-lang { display: flex; border: 1px solid var(--line-2); border-radius: 2px; padding: 2px; font-size: 11.5px; font-family: var(--mono); }
+.th-lang button { padding: 4px 9px; border-radius: 1px; color: var(--faint); border: 0; transition: background .2s, color .2s; }
+.th-lang button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.th-nav-cta { font-size: 14px; font-weight: 500; padding: 8px 15px; border: 1px solid var(--line-2); border-radius: 2px; color: var(--fg); text-decoration: none; transition: border-color .2s; }
+.th-nav-cta:hover { border-color: var(--fg); }
+
+.th-copy { position: relative; z-index: 5; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding-top: 28px; pointer-events: none; }
+.th-copy > * { pointer-events: auto; }
+.th-copy::before { content: ""; position: absolute; left: 50%; top: 50%; width: min(1100px, 94vw); height: 520px; transform: translate(-50%, -48%); pointer-events: none; z-index: -1; background: radial-gradient(closest-side, rgba(10,10,11,.74), rgba(10,10,11,.38) 60%, rgba(10,10,11,0)); }
+.th-copy h1 { font-family: var(--display); font-weight: 500; font-size: clamp(46px, 7.25vw, 104px); line-height: .98; letter-spacing: -.03em; margin: 0; }
+.th-copy h1 span { display: block; white-space: nowrap; }
+.th-sub { margin: 26px 0 0; font-size: 18px; line-height: 1.55; color: var(--muted); max-width: 620px; }
+.th-ctas { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 34px; flex-wrap: wrap; }
+.th-btn { display: inline-flex; align-items: center; gap: 10px; height: 48px; padding: 0 22px; border-radius: 2px; background: var(--accent); color: var(--on-accent); font-weight: 500; font-size: 15px; text-decoration: none; transition: background .25s, transform .5s cubic-bezier(.16,1,.3,1); }
+.th-btn:hover { background: #d4f86a; transform: translateY(-1px); }
+.th-ghost { display: inline-flex; align-items: center; height: 48px; padding: 0 20px; border-radius: 2px; border: 1px solid var(--line-2); font-weight: 500; font-size: 15px; color: var(--fg); text-decoration: none; transition: border-color .2s; }
+.th-ghost:hover { border-color: var(--fg); }
+.th-proof { margin: 30px 0 0; display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--faint); }
+.th-proof i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px rgba(197,240,78,.14); }
+
+.th-foot { position: absolute; left: 0; right: 0; bottom: 22px; z-index: 6; pointer-events: none; }
+.th-foot .th-wrap { display: flex; justify-content: space-between; align-items: center; font-family: var(--mono); font-size: 11.5px; color: var(--faint); letter-spacing: .01em; }
+.th-foot b { font-weight: 500; color: var(--muted); }
+.th-lime { color: var(--accent); }
+.th-foot .th-wrap > span { line-height: 1.25em; }
+.th-odo { display: inline-block; height: 1.25em; overflow: hidden; vertical-align: top; }
+.th-odo > span { display: block; transition: transform .55s cubic-bezier(.16,1,.3,1); }
+.th-odo i { display: block; height: 1.25em; line-height: 1.25em; font-style: normal; }
+
+.th-reveal { opacity: 0; transform: translateY(14px); animation: th-failsafe .7s 3.5s forwards; }
+.is-ready .th-reveal { animation: th-rise .9s cubic-bezier(.16,1,.3,1) forwards; }
+.is-ready .th-d1 { animation-delay: .1s; } .is-ready .th-d2 { animation-delay: .2s; } .is-ready .th-d3 { animation-delay: .3s; } .is-ready .th-d4 { animation-delay: .4s; }
+@keyframes th-rise { to { opacity: 1; transform: none; } }
+@keyframes th-failsafe { to { opacity: 1; transform: none; } }
+
+@media (max-width: 1080px) { .th-links { display: none; } .th-lang { margin-left: auto; } }
+@media (max-width: 640px) {
+  .th-wrap { padding: 0 20px; }
+  .th-nav .th-wrap { height: 60px; gap: 12px; }
+  .th-nav-cta { font-size: 13px; padding: 7px 12px; }
+  .th-hero { height: auto; min-height: 0; max-height: none; display: flex; flex-direction: column; }
+  .th-stage { position: relative; height: 400px; flex: none; }
+  .th-stage::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 90px; background: linear-gradient(180deg, rgba(10,10,11,0), var(--bg)); pointer-events: none; }
+  .th-copy { height: auto; justify-content: flex-start; padding: 0 0 92px; margin-top: -28px; }
+  .th-copy::before { display: none; }
+  .th-copy h1 { font-size: clamp(40px, 11.2vw, 56px); }
+  .th-copy h1 span { white-space: normal; }
+  .th-sub { font-size: 16px; margin-top: 18px; padding: 0 4px; }
+  .th-ctas { margin-top: 24px; }
+  .th-btn, .th-ghost { height: 46px; }
+  .th-proof { font-size: 12px; padding: 0 12px; text-align: left; }
+  .th-foot .th-wrap { justify-content: center; }
+  .th-left, .th-long { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .th-reveal, .is-ready .th-reveal { opacity: 1; transform: none; animation: none; } .th-odo > span { transition: none; } }
