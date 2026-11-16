@@ -27,6 +27,7 @@
     "nanoid": "^6.0.2",
     "sharp": "^0.35.5",
     "tsx": "^4.23.15",
-    "zod": "^4.6.7"
+    "zod": "^4.6.7",
+    "@snoopery/export": "workspace:*"
   }
 }

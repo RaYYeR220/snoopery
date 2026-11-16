@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { parsePuzzle, type AffordanceCard, type PlacedObject, type Puzzle, type RoomDoc } from '@snoopery/schema';
 import { designRoom, verify, type DesignResult, type LLM } from '@snoopery/puzzle';
 import type { AholoCall } from '@snoopery/aholo';
+import { exportRoom, EXPORT_FORMATS, type ExportFormat } from '@snoopery/export';
 import type { PipelineCtx } from './pipeline/context';
 import type { Job } from './pipeline/engine';
 import { retry, submit, tickAll } from './pipeline/loop';
@@ -297,6 +298,24 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
     if (room) return room;
     const draft = await ctx.docs.get<Draft>(`drafts/${id}`);
     return draft ? withoutHash(draft) : reply.code(404).send(notFound('room'));
+  });
+
+  // Every published room doubles as a robot-learning task: articulated scene + the solver's steps.
+  app.get('/rooms/:id/export', { config: { rateLimit: { max: 20, timeWindow: '1 hour' } } }, async (req, reply) => {
+    const id = (req.params as { id: string }).id;
+    const format = String((req.query as { format?: string }).format ?? 'mjcf') as ExportFormat;
+    if (!/^[A-Za-z0-9_-]{4,40}$/.test(id) || !EXPORT_FORMATS.includes(format)) return reply.code(400).send({ error: 'bad room id or format' });
+    const room = await ctx.docs.get<RoomDoc>(`rooms/${id}`);
+    if (!room) return reply.code(404).send(notFound('room'));
+    const key = `exports/${id}-${format}.zip`;
+    let url = ctx.blobs.publicUrl(key);
+    const cached = await ctx.docs.get<{ url: string }>(`exports/${id}-${format}`);
+    if (!cached) {
+      const zip = await exportRoom(room, (u) => ctx.blobs.getBytes(u), format);
+      url = await ctx.blobs.putBytes(key, zip, 'application/zip');
+      await ctx.docs.put(`exports/${id}-${format}`, { url });
+    }
+    return reply.redirect(cached?.url ?? url, 302);
   });
 
   app.get('/rooms', async () => {

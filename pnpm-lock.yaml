@@ -50,6 +50,9 @@ importers:
       '@snoopery/aholo':
         specifier: workspace:*
         version: link:../../packages/aholo
+      '@snoopery/export':
+        specifier: workspace:*
+        version: link:../../packages/export
       '@snoopery/joints':
         specifier: workspace:*
         version: link:../../packages/joints

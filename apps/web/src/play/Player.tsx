@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createRuntime, type PartRef, type Runtime } from '@snoopery/runtime';
 import type { PuzzleItem, RoomDoc } from '@snoopery/schema';
-import { api, loadRoom, type LeaderRow } from '../lib/api';
+import { api, API_URL, loadRoom, type LeaderRow } from '../lib/api';
 import * as sfx from './sound';
 import { formatTime, hint, looseItems, newGame, openPart, takeLoose, tryExit, type Game } from './game';
 
@@ -379,6 +379,14 @@ function Win({ room, game }: { room: RoomDoc; game: Game }) {
           </ol>
         )}
         <button onClick={() => navigator.clipboard?.writeText(location.href)}>Copy the link for a friend</button>
+        {!local && (
+          <div className="sn-export">
+            <span>Same room as a robot task:</span>
+            <a href={`${API_URL}/rooms/${encodeURIComponent(room.id)}/export?format=mjcf`}>MuJoCo</a>
+            <a href={`${API_URL}/rooms/${encodeURIComponent(room.id)}/export?format=usda`}>USD</a>
+            <a href={`${API_URL}/rooms/${encodeURIComponent(room.id)}/export?format=task`}>Task JSON</a>
+          </div>
+        )}
       </div>
     </div>
   );
