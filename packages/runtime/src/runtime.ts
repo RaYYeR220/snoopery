@@ -58,6 +58,8 @@ export interface Runtime {
   removeObject(objectId: string): void;
   /** World-space size of a placed object's bounding box. */
   objectSize(objectId: string): Vec3 | null;
+  /** A found item rises out of where it was hidden, turns once and fades: the moment of discovery. */
+  flashItem(glbUrl: string, from: Vec3): Promise<void>;
   /** The figure that acts out a solution. Loads once; later calls reuse it. */
   character(spec: CharacterSpec): Promise<CharacterControl>;
   floorY(): number;
@@ -123,6 +125,7 @@ export function createRuntime(container: HTMLElement, events: RuntimeEvents = {}
   const animationPlugin = new Animation.AnimationPlugin();
   animationPlugin.registerToViewer({ viewer } as never);
   let figure: Character | null = null;
+  const itemModels = new Map<string, Promise<Object3D>>();
   let figureLoad: Promise<Character> | null = null;
   const objectRoots = new Map<string, Object3D>();
   const meshOwner = new Map<Object3D, PartRef>();
@@ -437,6 +440,43 @@ export function createRuntime(container: HTMLElement, events: RuntimeEvents = {}
       return [box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z];
     },
     floorY: () => floorY,
+    async flashItem(glbUrl, from) {
+      const cached = itemModels.get(glbUrl) ?? (async () => {
+        const buf = await (await fetch(glbUrl)).arrayBuffer();
+        return (await GLTFLoader.loadGLTF(buf, { textureLoader: downloadTexture as never })).scene as unknown as Object3D;
+      })();
+      itemModels.set(glbUrl, cached);
+      const model = await cached;
+      if (disposed) return;
+      const holder = new Object3D();
+      holder.add(model);
+      model.updateMatrixWorld(true);
+      const box = new Box3().setFromObject(model as never);
+      const size = Math.max(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z) || 1;
+      const base = 0.16 / size;
+      scene.add(holder);
+      const t0 = performance.now();
+      const dur = 1300;
+      await new Promise<void>((done) => {
+        const step = () => {
+          if (disposed) return done();
+          const k = Math.min(1, (performance.now() - t0) / dur);
+          const rise = 1 - Math.pow(1 - Math.min(1, k / 0.6), 3);
+          const shrink = k < 0.75 ? 1 : 1 - (k - 0.75) / 0.25;
+          holder.position.set(from[0], from[1] + 0.08 + rise * 0.28, from[2]);
+          holder.rotation.y = k * Math.PI * 2;
+          holder.scale.setScalar(base * Math.max(0.001, shrink));
+          holder.setMatrixDirty();
+          holder.updateMatrixWorld(true);
+          forceFrames = Math.max(forceFrames, 2);
+          if (k < 1) requestAnimationFrame(step);
+          else done();
+        };
+        step();
+      });
+      scene.remove(holder);
+      forceFrames = Math.max(forceFrames, 2);
+    },
     async character(spec) {
       figureLoad ??= (async () => {
         const c = new Character(animationPlugin);

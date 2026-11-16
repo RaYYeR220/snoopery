@@ -158,6 +158,16 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
     return { characterId, jobId: job.id, jobToken };
   });
 
+  app.post('/props', costly, async (req, reply) => {
+    const body = z.object({ kind: z.enum(['key', 'clue', 'prop']), prompt: z.string().min(3).max(300) }).safeParse(req.body);
+    if (!body.success) return reply.code(400).send({ error: body.error.message });
+    if (generationGuard(reply)) return;
+    const jobToken = nanoid(24);
+    const job = await submit(ctx, 'prop', { ...body.data, tokenHash: hash(jobToken) });
+    void tickAll(ctx);
+    return { jobId: job.id, jobToken };
+  });
+
   app.get('/library', async () => {
     const [objects, spaces, characters] = await Promise.all(['objects/', 'spaces/', 'characters/'].map((p) => ctx.docs.list(p)));
     const load = async <T>(keys: string[]) => (await Promise.all(keys.map((k) => ctx.docs.get<T>(k)))).filter(Boolean) as T[];
@@ -275,6 +285,9 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
     const space = await ctx.docs.get<{ splatUrl: string; format: 'spz' | 'ply' | 'sog'; collision?: { metaUrl: string; binUrl: string } }>(`spaces/${draft.spaceId}`);
     if (!space) return reply.code(422).send({ error: 'space not ready' });
     const { objects } = await cardsFor(draft);
+    // Shared library bits every room uses: item models and the figure that walks the solution.
+    const props = (await ctx.docs.get<RoomDoc['props']>('library/props')) ?? undefined;
+    const character = (await ctx.docs.get<RoomDoc['character']>('library/character')) ?? undefined;
     const placed: PlacedObject[] = draft.objects
       .filter((o) => objects.has(o.objectId))
       .map((o) => ({ ...o, glbUrl: objects.get(o.objectId)!.webGlb!, joints: (objects.get(o.objectId)!.joints ?? []) as PlacedObject['joints'] }));
@@ -283,6 +296,8 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
       title: draft.title,
       author: draft.author,
       ...(draft.intro ? { intro: draft.intro.slice(0, 400) } : {}),
+      ...(props ? { props } : {}),
+      ...(character ? { character } : {}),
       splat: { url: space.splatUrl, format: space.format, transform: draft.splatTransform ?? IDENTITY, ...(space.collision ? { collision: space.collision } : {}) },
       spawn: draft.spawn,
       objects: placed,

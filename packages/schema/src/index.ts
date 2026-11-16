@@ -94,6 +94,8 @@ export const roomDoc = z.object({
   author: z.string(),
   /** One or two sentences setting the scene for the player. */
   intro: z.string().max(400).optional(),
+  /** Small 3D models shown when an item of that kind is found (Lux3D text-to-3D). */
+  props: z.object({ key: z.string().url().optional(), clue: z.string().url().optional(), prop: z.string().url().optional() }).optional(),
   /** The figure that walks the solution: a rigged model and its motions. */
   character: z
     .object({

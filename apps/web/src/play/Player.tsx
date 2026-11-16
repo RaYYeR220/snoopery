@@ -71,6 +71,11 @@ export function Player({ id }: { id: string }) {
           motionSound(r, ref);
           await runtime.animateJoint(ref.objectId, ref.part, 1);
           if (outcome.found.length) sfx.pickup();
+          {
+            const at = runtime.partPosition(ref.objectId, ref.part);
+            const model = outcome.found.map((it) => r.props?.[it.kind]).find(Boolean);
+            if (at && model) void runtime.flashItem(model, at);
+          }
           if (outcome.found.length === 0) toast(dRef.current.empty);
           for (const it of outcome.found) {
             toast(`${dRef.current.found}: ${it.label}`, 'good');

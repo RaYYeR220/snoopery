@@ -1,12 +1,13 @@
 import { createJob, retryStep, tickJob, type Job, type JobKind, type StepDef } from './engine';
 import type { PipelineCtx } from './context';
 import { objectSteps } from './object';
-import { characterSteps, spaceSteps } from './room';
+import { characterSteps, propSteps, spaceSteps } from './room';
 
 export const PIPELINES: Record<JobKind, StepDef<PipelineCtx>[]> = {
   object: objectSteps,
   room: spaceSteps,
   character: characterSteps,
+  prop: propSteps,
 };
 
 const ACTIVE = 'jobs/_active';

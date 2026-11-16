@@ -54,6 +54,11 @@ for (let i = 0; i < args.length; i++) {
   } else if (flag === '--space-prompt') {
     const r = await call<{ spaceId: string; jobId: string }>('/spaces', { title: value.slice(0, 80), prompt: value });
     queued.push({ label: `space "${value.slice(0, 40)}"`, jobId: r.jobId, ref: r.spaceId });
+  } else if (flag === '--prop') {
+    // --prop key "An antique brass key"
+    if (!extra) throw new Error('--prop needs a kind (key|clue|prop) and a prompt');
+    const r = await call<{ jobId: string }>('/props', { kind: value, prompt: extra });
+    queued.push({ label: `prop ${value}`, jobId: r.jobId, ref: value });
   } else if (flag === '--character') {
     const r = await call<{ characterId: string; jobId: string }>('/characters', { prompt: value });
     queued.push({ label: 'character', jobId: r.jobId, ref: r.characterId });

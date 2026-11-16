@@ -15,7 +15,7 @@ export interface StepState {
   attempts: number;
 }
 
-export type JobKind = 'object' | 'room' | 'character';
+export type JobKind = 'object' | 'room' | 'character' | 'prop';
 
 export interface Job {
   id: string;

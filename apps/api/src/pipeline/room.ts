@@ -160,7 +160,40 @@ export const characterSteps: StepDef<PipelineCtx>[] = [
         createdAt: job.createdAt,
       };
       await ctx.docs.put(`characters/${doc.id}`, doc);
+      // The newest character walks every room's solution.
+      const roles: Record<string, string> = { Idle_Loop: 'idle', Walk_Loop: 'walk', Chest_Open: 'open', PickUp_Table: 'pickup', Dance_Loop: 'cheer' };
+      const clipUrls = Object.fromEntries(Object.entries(doc.clips).flatMap(([name, url]) => (roles[name] ? [[roles[name], url]] : [])));
+      await ctx.docs.put('library/character', { modelUrl: doc.clips.Idle_Loop ?? doc.rigGlb, clipUrls });
       return { state: 'done', output: { characterId: doc.id } };
+    },
+  },
+];
+
+/** Small item models (a key, a folded note) that rise out of a drawer when found. */
+export const propSteps: StepDef<PipelineCtx>[] = [
+  lux3dStep(
+    'model',
+    'textTo3d',
+    [],
+    (ctx, job) => ctx.aholo.textTo3d({ prompt: job.input.prompt, faceCount: 20000 }),
+    async (ctx, job, o) => ({ glb: await mirror(ctx, `props/${job.input.kind}-${job.id}/source.glb`, o.glb ?? o.url) }),
+  ),
+  {
+    name: 'optimize',
+    needs: ['model'],
+    run: async (ctx, job) => {
+      const web = await ctx.optimize(await ctx.blobs.getBytes(out(job, 'model').glb));
+      return { state: 'done', output: { glb: await ctx.blobs.putBytes(`props/${job.input.kind}-${job.id}/web.glb`, web, 'model/gltf-binary') } };
+    },
+  },
+  {
+    name: 'publish',
+    needs: ['optimize'],
+    run: async (ctx, job) => {
+      const props = (await ctx.docs.get<Record<string, string>>('library/props')) ?? {};
+      props[job.input.kind] = out(job, 'optimize').glb;
+      await ctx.docs.put('library/props', props);
+      return { state: 'done', output: { kind: job.input.kind } };
     },
   },
 ];
