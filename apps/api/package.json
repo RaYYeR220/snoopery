@@ -1,0 +1,30 @@
+{
+  "name": "@snoopery/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.4.3",
+    "@fastify/multipart": "^10.1.8",
+    "@gltf-transform/core": "^4.5.1",
+    "@gltf-transform/extensions": "^4.5.1",
+    "@gltf-transform/functions": "^4.5.1",
+    "@google-cloud/storage": "^9",
+    "@snoopery/aholo": "workspace:*",
+    "@snoopery/joints": "workspace:*",
+    "@snoopery/puzzle": "workspace:*",
+    "@snoopery/schema": "workspace:*",
+    "fastify": "^5.12.8",
+    "fflate": "^0.8.3",
+    "meshoptimizer": "^1.3.0",
+    "nanoid": "^6.0.2",
+    "sharp": "^0.35.5",
+    "tsx": "^4.23.15",
+    "zod": "^4.6.7"
+  }
+}
