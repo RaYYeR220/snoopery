@@ -92,6 +92,8 @@ export const roomDoc = z.object({
   id,
   title: z.string().min(1),
   author: z.string(),
+  /** One or two sentences setting the scene for the player. */
+  intro: z.string().max(400).optional(),
   splat: z.object({
     url: z.string().url(),
     format: z.enum(['spz', 'ply', 'sog']),

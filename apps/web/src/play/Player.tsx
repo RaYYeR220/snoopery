@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createRuntime, type PartRef, type Runtime } from '@snoopery/runtime';
 import type { PuzzleItem, RoomDoc } from '@snoopery/schema';
 import { api, loadRoom, type LeaderRow } from '../lib/api';
+import * as sfx from './sound';
 import { formatTime, hint, looseItems, newGame, openPart, takeLoose, tryExit, type Game } from './game';
 
 type Toast = { id: number; text: string; tone?: 'info' | 'warn' | 'good' };
@@ -21,12 +22,20 @@ export function Player({ id }: { id: string }) {
   const [hover, setHover] = useState<PartRef | null>(null);
   const [now, setNow] = useState(Date.now());
   const [replaying, setReplaying] = useState(false);
+  const [intro, setIntro] = useState(true);
+  const [muted, setMutedState] = useState(false);
 
   const toast = useCallback((text: string, tone: Toast['tone'] = 'info') => {
     const t = { id: Math.random(), text, tone };
     setToasts((x) => [...x.slice(-2), t]);
     setTimeout(() => setToasts((x) => x.filter((y) => y.id !== t.id)), 3600);
   }, []);
+
+  const motionSound = (r: RoomDoc, ref: PartRef) => {
+    const joint = r.objects.find((o) => o.objectId === ref.objectId)?.joints.find((j) => j.part === ref.part);
+    if (joint?.type === 'prismatic') sfx.slide();
+    else sfx.creak();
+  };
 
   const labelOf = useCallback((r: RoomDoc, ref: PartRef) => {
     const c = r.puzzle.containers.find((x) => x.objectId === ref.objectId && x.part === ref.part);
@@ -44,12 +53,16 @@ export function Player({ id }: { id: string }) {
       switch (outcome.kind) {
         case 'toggle': {
           const open = runtime.getJoint(ref.objectId, ref.part) > 0.5;
+          motionSound(r, ref);
           await runtime.animateJoint(ref.objectId, ref.part, open ? 0 : 1);
           break;
         }
         case 'opened':
           setModal(null);
+          if (typedCode) sfx.unlock();
+          motionSound(r, ref);
           await runtime.animateJoint(ref.objectId, ref.part, 1);
+          if (outcome.found.length) sfx.pickup();
           if (outcome.found.length === 0) toast('Empty.');
           for (const it of outcome.found) {
             toast(`Found: ${it.label}`, 'good');
@@ -57,6 +70,7 @@ export function Player({ id }: { id: string }) {
           }
           break;
         case 'locked':
+          sfx.rattle();
           await runtime.animateJoint(ref.objectId, ref.part, 0.06, 140);
           await runtime.animateJoint(ref.objectId, ref.part, 0, 180);
           if (outcome.needs === 'code') setModal({ kind: 'keypad', ref, label: labelOf(r, ref) });
@@ -115,6 +129,12 @@ export function Player({ id }: { id: string }) {
     return () => clearInterval(t);
   }, []);
 
+  // The clock starts when the player starts, not when the page loads.
+  const startPlay = () => {
+    setIntro(false);
+    setGame((g) => (g.steps === 0 ? { ...g, startedAt: Date.now() } : g));
+  };
+
   const onHint = () => {
     if (!room || !rt.current) return;
     const next = hint(room, game);
@@ -142,7 +162,10 @@ export function Player({ id }: { id: string }) {
     if (!room) return;
     const { game: next, outcome } = tryExit(room, game);
     setGame(next);
-    if (outcome.kind === 'escaped') setModal({ kind: 'win' });
+    if (outcome.kind === 'escaped') {
+      sfx.unlock();
+      setModal({ kind: 'win' });
+    }
     else if (outcome.kind === 'exit-locked') toast('The door is locked.', 'warn');
   };
 
@@ -195,6 +218,15 @@ export function Player({ id }: { id: string }) {
               </div>
             </div>
             <div className="sn-hud-actions">
+              <button
+                aria-label={muted ? 'Sound on' : 'Sound off'}
+                onClick={() => {
+                  sfx.setMuted(!muted);
+                  setMutedState(!muted);
+                }}
+              >
+                {muted ? 'Sound off' : 'Sound on'}
+              </button>
               <button onClick={onHint} disabled={replaying}>Hint</button>
               <button onClick={replay} disabled={replaying}>Watch the solution</button>
               <button className="sn-primary" onClick={onExit} disabled={replaying}>Try the door</button>
@@ -212,6 +244,7 @@ export function Player({ id }: { id: string }) {
                     setGame(next);
                     gameRef.current = next;
                     toast(`Picked up: ${it.label}`, 'good');
+                    sfx.pickup();
                     if (it.kind === 'clue' && it.text) setModal({ kind: 'clue', item: it });
                   }}
                 >
@@ -239,6 +272,24 @@ export function Player({ id }: { id: string }) {
             ))}
           </div>
         </>
+      )}
+      {room && intro && progress >= 1 && (
+        <div className="sn-modal" onClick={startPlay}>
+          <div className="sn-card sn-intro" onClick={(e) => e.stopPropagation()}>
+            <div className="sn-card-kicker">{room.author ? `${room.author}'s room` : 'Someone’s room'}</div>
+            <h2>{room.title}</h2>
+            {room.intro && <p>{room.intro}</p>}
+            <ul className="sn-howto">
+              <li>Drag to look around · click the floor (or WASD) to walk</li>
+              <li>Click drawers, lids and doors — they really open</li>
+              <li>Find what you need, then try the door</li>
+            </ul>
+            <p className="sn-muted">The way out is proven: the shortest escape takes {room.verdict.minSteps} steps.</p>
+            <button className="sn-primary" onClick={startPlay}>
+              Start snooping
+            </button>
+          </div>
+        </div>
       )}
       {modal?.kind === 'keypad' && <Keypad label={modal.label} onClose={() => setModal(null)} onSubmit={(code) => void interact(modal.ref, code).then(() => undefined)} />}
       {modal?.kind === 'clue' && (

@@ -243,7 +243,7 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
     if (cards.length === 0) return reply.code(422).send({ error: 'place at least one object with an openable part' });
     const result = await designRoom({ cards, theme: body.data.theme, difficulty: body.data.difficulty }, deps.llm, deps.escalation ? { escalate: { llm: deps.escalation } } : {});
     const { puzzle, ...design } = result;
-    const next: Draft = { ...draft, puzzle: result.ok ? puzzle : draft.puzzle, design, updatedAt: new Date().toISOString() };
+    const next: Draft = { ...draft, puzzle: result.ok ? puzzle : draft.puzzle, intro: result.ok ? result.intro : draft.intro, design, updatedAt: new Date().toISOString() };
     await ctx.docs.put(`drafts/${id}`, next);
     return result;
   });
@@ -279,6 +279,7 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
       id,
       title: draft.title,
       author: draft.author,
+      ...(draft.intro ? { intro: draft.intro.slice(0, 400) } : {}),
       splat: { url: space.splatUrl, format: space.format, transform: draft.splatTransform ?? IDENTITY, ...(space.collision ? { collision: space.collision } : {}) },
       spawn: draft.spawn,
       objects: placed,
