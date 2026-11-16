@@ -1,0 +1,33 @@
+mujoco 4.0.1  demo-mjcf.zip
+model: 4 bodies, 2 joints, 5 geoms, 4 meshes, total mass 71.38 kg, timestep 0.002 s
+
+  OK   scene has 2 slide/hinge joints
+  OK   every room joint is in the scene
+
+[slide] nightstand__top_drawer  range 0 .. 0.3 m  limited=True
+  OK   limited joint with a positive range (0.3 m)
+  OK   kinematic: qpos 0 -> 0.3 moves the body 0.300000 m (expected 0.300000)
+  OK   kinematic: motion direction (-1.0000, +0.0000, +0.0000) = world joint axis (-1.0000, -0.0000, +0.0000)
+  OK   room: world axis (-1.0000, -0.0000, +0.0000) matches the placement (-1.0000, -0.0000, +0.0000)
+  OK   passive 2 s at 0: drift 0.00e+00 m
+  OK   driven to 0.3: q = 0.29999 m after 3 s (error 0.00% of range)
+  OK   driven: body moved 0.29999 m in the world, as the joint says
+  OK   coupling: other joints moved at most 3.61e-17 while driving
+  OK   limit: pushed towards 0.45, held at q = 0.30187 m (overshoot 0.62% of range)
+  OK   driven back to 0: q = 0.00001 m
+
+[hinge] jewelry_box__lid  range 0 .. 1.9 rad  limited=True
+  OK   limited joint with a positive range (1.9 rad)
+  OK   kinematic: qpos 0 -> 1.9 moves the body 1.900000 rad (expected 1.900000)
+  OK   kinematic: motion axis (+0.0000, +1.0000, +0.0000) = world joint axis (-0.0000, +1.0000, +0.0000)
+  OK   room: world axis (-0.0000, +1.0000, +0.0000) matches the placement (-0.0000, +1.0000, +0.0000)
+  OK   room: hinge anchor (-2.5000, -1.0000, +0.2300) matches the placement (-2.5000, -1.0000, +0.2300) (err 0.00e+00 m)
+  OK   passive 2 s at 0: drift 8.85e-04 rad
+  OK   driven to 1.9: q = 1.89969 rad after 3 s (error 0.02% of range)
+  OK   driven: body moved 1.89969 rad in the world, as the joint says
+  OK   coupling: other joints moved at most 0.00e+00 while driving
+  OK   limit: pushed towards 2.85, held at q = 1.91185 rad (overshoot 0.62% of range)
+  OK   driven back to 0: q = 0.00031 rad
+
+  OK   no simulator warnings
+RESULT: PASS (24/24 checks, 2 joints)

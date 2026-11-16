@@ -1,0 +1,22 @@
+{
+  "name": "@snoopery/export",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "export:demo": "tsx scripts/export-demo.ts",
+    "check:mjcf": "python scripts/check-mjcf.py results/demo-mjcf.zip --room ../../apps/web/public/dev/demo.json"
+  },
+  "dependencies": {
+    "@gltf-transform/core": "^4.5.1",
+    "@gltf-transform/extensions": "^4.5.1",
+    "@snoopery/joints": "workspace:*",
+    "@snoopery/schema": "workspace:*",
+    "fflate": "^0.8.3"
+  }
+}
