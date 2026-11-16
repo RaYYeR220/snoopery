@@ -4,7 +4,7 @@
 //   tsx scripts/seed.ts --api https://… --photo dresser.jpg "three drawers" --photo box.jpg \
 //                       --space-video room.mp4 "Living room" --space-prompt "A cluttered attic study" \
 //                       --character "A small brass clockwork detective in a long coat"
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { basename, extname } from 'node:path';
 
 interface Job {
@@ -39,7 +39,7 @@ async function upload(path: string): Promise<string> {
   return signed.publicUrl;
 }
 
-const queued: { label: string; jobId: string; ref: string }[] = [];
+const queued: { label: string; jobId: string; ref: string; source?: string; status?: string }[] = [];
 
 for (let i = 0; i < args.length; i++) {
   const flag = args[i];
@@ -50,7 +50,7 @@ for (let i = 0; i < args.length; i++) {
   if (flag === '--photo') {
     const photoUrl = await upload(value);
     const r = await call<{ objectId: string; jobId: string }>('/objects', { photoUrl, ...(extra ? { hint: extra } : {}) });
-    queued.push({ label: `object ${basename(value)}`, jobId: r.jobId, ref: r.objectId });
+    queued.push({ label: `object ${basename(value)}`, jobId: r.jobId, ref: r.objectId, source: basename(value) });
   } else if (flag === '--space-video') {
     const videoUrl = await upload(value);
     const r = await call<{ spaceId: string; jobId: string }>('/spaces', { title: extra ?? 'Filmed room', videoUrl, quality: 'high' });
@@ -80,8 +80,13 @@ while (pending.size) {
     const job = await call<Job>(`/jobs/${q.jobId}`);
     if (job.status === 'active') continue;
     pending.delete(q.jobId);
+    q.status = job.status;
     const steps = job.steps.map((s) => `${s.name}:${s.status}${s.ms ? `(${Math.round(s.ms / 1000)}s)` : ''}${s.error ? ` [${s.error}]` : ''}`).join(' ');
     console.log(`${job.status.toUpperCase()} ${q.label} → ${q.ref}\n  ${steps}`);
   }
   if (pending.size) console.log(`… ${pending.size} still running`);
 }
+
+// Which object came from which file, for follow-up checks (e.g. true scale against known dimensions).
+writeFileSync('seed-results.json', JSON.stringify(queued, null, 2));
+console.log('wrote seed-results.json');
