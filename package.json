@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "vitest run",
-    "typecheck": "pnpm -r --if-present typecheck"
+    "typecheck": "pnpm -r --if-present typecheck",
+    "numbers": "tsx scripts/numbers.ts"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",
