@@ -1,4 +1,4 @@
-import { initialState, reduce, solve, type PlayState } from '@snoopery/puzzle';
+import { initialState, reduce, solve, type PlayState } from '@snoopery/puzzle/play';
 import type { Action, Puzzle, PuzzleContainer, PuzzleItem, RoomDoc } from '@snoopery/schema';
 
 export type Outcome =
