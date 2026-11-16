@@ -49,12 +49,13 @@ const app = await buildServer({
   tickToken: env('TICK_TOKEN'),
   generationPaused: () => process.env.GENERATION_PAUSED === '1',
   ledger,
-  signUpload: async (key, contentType) => {
+  signUpload: async (key, contentType, maxBytes) => {
+    const headers = { 'x-goog-content-length-range': `0,${maxBytes}` };
     const [uploadUrl] = await storage
       .bucket(bucket)
       .file(key)
-      .getSignedUrl({ version: 'v4', action: 'write', contentType, expires: Date.now() + 30 * 60_000 });
-    return { uploadUrl, publicUrl: blobs.publicUrl(key) };
+      .getSignedUrl({ version: 'v4', action: 'write', contentType, expires: Date.now() + 30 * 60_000, extensionHeaders: headers });
+    return { uploadUrl, publicUrl: blobs.publicUrl(key), headers: { ...headers, 'content-type': contentType } };
   },
 });
 

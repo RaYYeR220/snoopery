@@ -1,5 +1,7 @@
 import Fastify, { type FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
+import rateLimit from '@fastify/rate-limit';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import { nanoid } from 'nanoid';
 import { z } from 'zod';
 import { parsePuzzle, type AffordanceCard, type PlacedObject, type Puzzle, type RoomDoc } from '@snoopery/schema';
@@ -14,7 +16,7 @@ export interface ServerDeps {
   ctx: PipelineCtx;
   llm: LLM;
   /** Signs a direct browser upload into the asset bucket. */
-  signUpload(key: string, contentType: string): Promise<{ uploadUrl: string; publicUrl: string }>;
+  signUpload(key: string, contentType: string, maxBytes: number): Promise<{ uploadUrl: string; publicUrl: string; headers: Record<string, string> }>;
   tickToken: string;
   generationPaused(): boolean;
   ledger: AholoCall[];
@@ -38,25 +40,53 @@ const draftSchema = z.object({
   ),
   splatTransform: z.array(z.number()).length(16).optional(),
 });
-type Draft = z.infer<typeof draftSchema> & { id: string; puzzle?: Puzzle; design?: Omit<DesignResult, 'puzzle'>; intro?: string; updatedAt: string };
+type Draft = z.infer<typeof draftSchema> & { id: string; tokenHash: string; puzzle?: Puzzle; design?: Omit<DesignResult, 'puzzle'>; intro?: string; updatedAt: string };
 
 const IDENTITY = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+
+const UPLOAD_TYPES: Record<string, string[]> = {
+  'image/jpeg': ['jpg', 'jpeg'],
+  'image/png': ['png'],
+  'image/webp': ['webp'],
+  'video/mp4': ['mp4'],
+  'video/quicktime': ['mov'],
+  'application/octet-stream': ['insv'],
+};
+const MAX_UPLOAD_BYTES = 500 * 1024 * 1024;
+
+const hash = (token: string) => createHash('sha256').update(token).digest('hex');
+function tokenMatches(token: unknown, expectedHash: string | undefined): boolean {
+  if (typeof token !== 'string' || !expectedHash) return false;
+  const a = Buffer.from(hash(token), 'hex');
+  const b = Buffer.from(expectedHash, 'hex');
+  return a.length === b.length && timingSafeEqual(a, b);
+}
 
 export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
   const { ctx } = deps;
   const app = Fastify({ logger: false, bodyLimit: 2 * 1024 * 1024 });
-  await app.register(cors, { origin: true });
+  await app.register(cors, { origin: true, allowedHeaders: ['content-type', 'x-edit-token', 'x-tick-token'] });
+  await app.register(rateLimit, { max: 120, timeWindow: '1 minute' });
+  const costly = { config: { rateLimit: { max: 12, timeWindow: '1 hour' } } };
+  const designLimit = { config: { rateLimit: { max: 30, timeWindow: '1 hour' } } };
+
+  // Media handed to the pipeline must come from our own signed uploads.
+  const uploadsPrefix = ctx.blobs.publicUrl('uploads/');
+  const ownUpload = z.string().url().refine((u) => u.startsWith(uploadsPrefix), 'upload the file first via /uploads/sign');
+  const editToken = (req: { headers: Record<string, unknown> }) => req.headers['x-edit-token'];
 
   const notFound = (what: string) => ({ error: `${what} not found` });
 
   app.get('/health', async () => ({ ok: true }));
   app.get('/status', async () => ({ generation: deps.generationPaused() ? 'paused' : 'live' }));
 
-  app.post('/uploads/sign', async (req, reply) => {
+  app.post('/uploads/sign', { config: { rateLimit: { max: 40, timeWindow: '1 hour' } } }, async (req, reply) => {
     const body = z.object({ filename: z.string().min(1).max(120), contentType: z.string().min(3) }).safeParse(req.body);
     if (!body.success) return reply.code(400).send({ error: body.error.message });
     const ext = body.data.filename.split('.').pop()!.toLowerCase().replace(/[^a-z0-9]/g, '');
-    return deps.signUpload(`uploads/${nanoid(10)}.${ext}`, body.data.contentType);
+    const allowed = UPLOAD_TYPES[body.data.contentType];
+    if (!allowed || !allowed.includes(ext)) return reply.code(415).send({ error: 'only JPEG/PNG/WebP photos and MP4/MOV/INSV videos' });
+    return { ...(await deps.signUpload(`uploads/${nanoid(10)}.${ext}`, body.data.contentType, MAX_UPLOAD_BYTES)), maxBytes: MAX_UPLOAD_BYTES };
   });
 
   const generationGuard = (reply: any) => {
@@ -65,14 +95,17 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
     return true;
   };
 
-  app.post('/objects', async (req, reply) => {
-    const body = z.object({ photoUrl: z.string().url(), hint: z.string().max(200).optional() }).safeParse(req.body);
+  const withoutHash = ({ tokenHash: _t, ...rest }: Draft) => rest;
+
+  app.post('/objects', costly, async (req, reply) => {
+    const body = z.object({ photoUrl: ownUpload, hint: z.string().max(200).optional() }).safeParse(req.body);
     if (!body.success) return reply.code(400).send({ error: body.error.message });
     if (generationGuard(reply)) return;
     const objectId = nanoid(10);
-    const job = await submit(ctx, 'object', { objectId, photoUrl: body.data.photoUrl, hint: body.data.hint });
+    const jobToken = nanoid(24);
+    const job = await submit(ctx, 'object', { objectId, photoUrl: body.data.photoUrl, hint: body.data.hint, tokenHash: hash(jobToken) });
     void tickAll(ctx);
-    return { objectId, jobId: job.id };
+    return { objectId, jobId: job.id, jobToken };
   });
 
   app.get('/objects/:id', async (req, reply) => {
@@ -80,27 +113,29 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
     return doc ?? reply.code(404).send(notFound('object'));
   });
 
-  app.post('/spaces', async (req, reply) => {
+  app.post('/spaces', costly, async (req, reply) => {
     const body = z
-      .object({ title: z.string().min(1).max(80), videoUrl: z.string().url().optional(), prompt: z.string().max(400).optional(), imageUrl: z.string().url().optional(), quality: z.enum(['low', 'normal', 'high']).optional() })
+      .object({ title: z.string().min(1).max(80), videoUrl: ownUpload.optional(), prompt: z.string().max(400).optional(), imageUrl: ownUpload.optional(), quality: z.enum(['low', 'normal', 'high']).optional() })
       .refine((b) => b.videoUrl || b.prompt || b.imageUrl, 'videoUrl, prompt or imageUrl required')
       .safeParse(req.body);
     if (!body.success) return reply.code(400).send({ error: body.error.message });
     if (generationGuard(reply)) return;
     const spaceId = nanoid(10);
-    const job = await submit(ctx, 'room', { spaceId, ...body.data });
+    const jobToken = nanoid(24);
+    const job = await submit(ctx, 'room', { spaceId, ...body.data, tokenHash: hash(jobToken) });
     void tickAll(ctx);
-    return { spaceId, jobId: job.id };
+    return { spaceId, jobId: job.id, jobToken };
   });
 
-  app.post('/characters', async (req, reply) => {
+  app.post('/characters', costly, async (req, reply) => {
     const body = z.object({ prompt: z.string().min(3).max(300), style: z.string().optional() }).safeParse(req.body);
     if (!body.success) return reply.code(400).send({ error: body.error.message });
     if (generationGuard(reply)) return;
     const characterId = nanoid(10);
-    const job = await submit(ctx, 'character', { characterId, ...body.data });
+    const jobToken = nanoid(24);
+    const job = await submit(ctx, 'character', { characterId, ...body.data, tokenHash: hash(jobToken) });
     void tickAll(ctx);
-    return { characterId, jobId: job.id };
+    return { characterId, jobId: job.id, jobToken };
   });
 
   app.get('/library', async () => {
@@ -118,10 +153,15 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
     return job ?? reply.code(404).send(notFound('job'));
   });
 
-  app.post('/jobs/:id/retry', async (req, reply) => {
+  app.post('/jobs/:id/retry', costly, async (req, reply) => {
     const step = z.object({ step: z.string() }).safeParse(req.body);
     if (!step.success) return reply.code(400).send({ error: step.error.message });
-    const job = await retry(ctx, (req.params as { id: string }).id, step.data.step);
+    if (generationGuard(reply)) return;
+    const id = (req.params as { id: string }).id;
+    const existing = await ctx.docs.get<Job>(`jobs/${id}`);
+    if (!existing) return reply.code(404).send(notFound('job'));
+    if (!tokenMatches(editToken(req), existing.input.tokenHash)) return reply.code(403).send({ error: 'not your job' });
+    const job = await retry(ctx, id, step.data.step);
     if (!job) return reply.code(404).send(notFound('job'));
     void tickAll(ctx);
     return job;
@@ -136,20 +176,34 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
   app.post('/rooms', async (req, reply) => {
     const body = draftSchema.safeParse(req.body);
     if (!body.success) return reply.code(400).send({ error: body.error.message });
-    const draft: Draft = { ...body.data, id: nanoid(10), updatedAt: new Date().toISOString() };
+    const token = nanoid(24);
+    const draft: Draft = { ...body.data, id: nanoid(10), tokenHash: hash(token), updatedAt: new Date().toISOString() };
     await ctx.docs.put(`drafts/${draft.id}`, draft);
-    return draft;
+    return { ...withoutHash(draft), editToken: token };
   });
 
+  /** Loads a draft the caller may edit, or replies 404/403. */
+  async function ownDraft(req: any, reply: any): Promise<Draft | null> {
+    const draft = await ctx.docs.get<Draft>(`drafts/${(req.params as { id: string }).id}`);
+    if (!draft) {
+      reply.code(404).send(notFound('room'));
+      return null;
+    }
+    if (!tokenMatches(editToken(req), draft.tokenHash)) {
+      reply.code(403).send({ error: 'edit token required' });
+      return null;
+    }
+    return draft;
+  }
+
   app.put('/rooms/:id', async (req, reply) => {
-    const id = (req.params as { id: string }).id;
-    const prev = await ctx.docs.get<Draft>(`drafts/${id}`);
-    if (!prev) return reply.code(404).send(notFound('room'));
+    const prev = await ownDraft(req, reply);
+    if (!prev) return;
     const body = draftSchema.safeParse(req.body);
     if (!body.success) return reply.code(400).send({ error: body.error.message });
     const draft: Draft = { ...prev, ...body.data, updatedAt: new Date().toISOString() };
-    await ctx.docs.put(`drafts/${id}`, draft);
-    return draft;
+    await ctx.docs.put(`drafts/${prev.id}`, draft);
+    return withoutHash(draft);
   });
 
   async function cardsFor(draft: Draft): Promise<{ cards: AffordanceCard[]; objects: Map<string, ObjectDoc> }> {
@@ -162,12 +216,12 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
     return { cards, objects };
   }
 
-  app.post('/rooms/:id/design', async (req, reply) => {
-    const id = (req.params as { id: string }).id;
+  app.post('/rooms/:id/design', designLimit, async (req, reply) => {
     const body = z.object({ theme: z.string().min(2).max(200), difficulty: z.union([z.literal(1), z.literal(2), z.literal(3)]) }).safeParse(req.body);
     if (!body.success) return reply.code(400).send({ error: body.error.message });
-    const draft = await ctx.docs.get<Draft>(`drafts/${id}`);
-    if (!draft) return reply.code(404).send(notFound('room'));
+    const draft = await ownDraft(req, reply);
+    if (!draft) return;
+    const id = draft.id;
     const { cards } = await cardsFor(draft);
     if (cards.length === 0) return reply.code(422).send({ error: 'place at least one object with an openable part' });
     const result = await designRoom({ cards, theme: body.data.theme, difficulty: body.data.difficulty }, deps.llm);
@@ -178,9 +232,9 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
   });
 
   app.put('/rooms/:id/puzzle', async (req, reply) => {
-    const id = (req.params as { id: string }).id;
-    const draft = await ctx.docs.get<Draft>(`drafts/${id}`);
-    if (!draft) return reply.code(404).send(notFound('room'));
+    const draft = await ownDraft(req, reply);
+    if (!draft) return;
+    const id = draft.id;
     let puzzle: Puzzle;
     try {
       puzzle = parsePuzzle(req.body);
@@ -192,9 +246,9 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
   });
 
   app.post('/rooms/:id/publish', async (req, reply) => {
-    const id = (req.params as { id: string }).id;
-    const draft = await ctx.docs.get<Draft>(`drafts/${id}`);
-    if (!draft) return reply.code(404).send(notFound('room'));
+    const draft = await ownDraft(req, reply);
+    if (!draft) return;
+    const id = draft.id;
     if (!draft.puzzle) return reply.code(409).send({ error: 'room has no puzzle yet' });
     const verdict = verify(draft.puzzle, { minSteps: 1 });
     if (!verdict.solvable) return reply.code(409).send({ error: 'room is not solvable', issues: verdict.issues });
@@ -221,7 +275,10 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
 
   app.get('/rooms/:id', async (req, reply) => {
     const id = (req.params as { id: string }).id;
-    return (await ctx.docs.get<RoomDoc>(`rooms/${id}`)) ?? (await ctx.docs.get<Draft>(`drafts/${id}`)) ?? reply.code(404).send(notFound('room'));
+    const room = await ctx.docs.get<RoomDoc>(`rooms/${id}`);
+    if (room) return room;
+    const draft = await ctx.docs.get<Draft>(`drafts/${id}`);
+    return draft ? withoutHash(draft) : reply.code(404).send(notFound('room'));
   });
 
   app.get('/rooms', async () => {

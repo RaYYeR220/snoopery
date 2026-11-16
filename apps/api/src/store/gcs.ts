@@ -1,5 +1,6 @@
 import { Storage } from '@google-cloud/storage';
 import { contentTypeFor, type BlobStore, type DocStore } from './types';
+import { fetchBytes } from './fetch';
 
 const PUBLIC = 'https://storage.googleapis.com';
 
@@ -43,9 +44,7 @@ export function gcsStores(bucketName: string): { docs: DocStore; blobs: BlobStor
       return publicUrl(key);
     },
     async putFromUrl(key, url) {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`mirror ${url}: HTTP ${res.status}`);
-      const bytes = new Uint8Array(await res.arrayBuffer());
+      const bytes = await fetchBytes(url, { extraPrefixes: [publicUrl('')] });
       const contentType = contentTypeFor(key);
       return { url: await blobs.putBytes(key, bytes, contentType), bytes: bytes.length, contentType };
     },
@@ -55,9 +54,7 @@ export function gcsStores(bucketName: string): { docs: DocStore; blobs: BlobStor
         const [buf] = await bucket.file(urlOrKey.replace(prefix, '')).download();
         return new Uint8Array(buf);
       }
-      const res = await fetch(urlOrKey);
-      if (!res.ok) throw new Error(`fetch ${urlOrKey}: HTTP ${res.status}`);
-      return new Uint8Array(await res.arrayBuffer());
+      return fetchBytes(urlOrKey);
     },
   };
   return { docs, blobs };
