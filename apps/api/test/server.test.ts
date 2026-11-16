@@ -13,6 +13,7 @@ async function setup(paused = false) {
     blobs,
     describe: async () => ({ label: 'Box', category: 'box', parts: [{ name: 'lid', joint: 'revolute' }], motionPrompt: 'Keep the base fixed; the lid hinges open.' }),
     optimize: async (b) => b,
+    voxelize: async () => ({ meta: new Uint8Array([123]), bin: new Uint8Array([0]) }),
     analyze: async () => ({ joints: [], card: { objectId: 'x', label: 'x', sizeM: [1, 1, 1], parts: [] }, source: 'animation' }),
     config: { articulateFrom: 'split', faceCount: 40000, characterClips: [] },
   };

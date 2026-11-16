@@ -15,6 +15,8 @@ import type { ObjectDoc } from './pipeline/object';
 export interface ServerDeps {
   ctx: PipelineCtx;
   llm: LLM;
+  /** Second model for the later repair rounds. */
+  escalation?: LLM;
   /** Signs a direct browser upload into the asset bucket. */
   signUpload(key: string, contentType: string, maxBytes: number): Promise<{ uploadUrl: string; publicUrl: string; headers: Record<string, string> }>;
   tickToken: string;
@@ -239,7 +241,7 @@ export async function buildServer(deps: ServerDeps): Promise<FastifyInstance> {
     const id = draft.id;
     const { cards } = await cardsFor(draft);
     if (cards.length === 0) return reply.code(422).send({ error: 'place at least one object with an openable part' });
-    const result = await designRoom({ cards, theme: body.data.theme, difficulty: body.data.difficulty }, deps.llm);
+    const result = await designRoom({ cards, theme: body.data.theme, difficulty: body.data.difficulty }, deps.llm, deps.escalation ? { escalate: { llm: deps.escalation } } : {});
     const { puzzle, ...design } = result;
     const next: Draft = { ...draft, puzzle: result.ok ? puzzle : draft.puzzle, design, updatedAt: new Date().toISOString() };
     await ctx.docs.put(`drafts/${id}`, next);

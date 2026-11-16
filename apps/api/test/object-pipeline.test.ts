@@ -48,6 +48,7 @@ function ctxWith(aholo: Aholo, articulateFrom: 'split' | 'mesh' = 'split'): Pipe
     blobs,
     describe: async () => ({ label: 'Oak dresser', category: 'dresser', parts: [{ name: 'top_drawer', joint: 'prismatic' }], motionPrompt: 'Keep the body fixed. The top drawer slides out 30 cm.' }),
     optimize: async (b) => b,
+    voxelize: async () => ({ meta: new Uint8Array([123]), bin: new Uint8Array([0]) }),
     analyze: async (_b, objectId, label) => ({
       joints: [{ part: 'top_drawer', node: 'top_drawer', type: 'prismatic', axis: [1, 0, 0], pivot: [0, 0, 0], min: 0, max: 0.3 }],
       card: { objectId, label, sizeM: [1, 1, 0.5], parts: [{ part: 'top_drawer', joint: 'prismatic', capacity: 'medium' }] },

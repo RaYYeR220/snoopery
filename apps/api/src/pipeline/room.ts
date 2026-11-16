@@ -9,6 +9,7 @@ export interface SpaceDoc {
   splatUrl: string;
   format: 'spz' | 'ply' | 'sog';
   panoUrl?: string;
+  collision?: { metaUrl: string; binUrl: string };
   input: { videoUrl?: string; prompt?: string; imageUrl?: string };
   jobId?: string;
   createdAt: string;
@@ -66,10 +67,32 @@ export const spaceSteps: StepDef<PipelineCtx>[] = [
     },
   },
   {
-    name: 'publish',
+    // Walk collision is a nicety: if voxelizing fails the space still publishes, walking just uses room bounds.
+    name: 'collision',
     needs: ['mirror'],
     run: async (ctx, job) => {
       const m = out(job, 'mirror');
+      try {
+        const { meta, bin } = await ctx.voxelize(await ctx.blobs.getBytes(m.splatUrl), m.format);
+        const base = `spaces/${job.input.spaceId}/voxel`;
+        return {
+          state: 'done',
+          output: {
+            metaUrl: await ctx.blobs.putBytes(`${base}/voxel-meta.json`, meta, 'application/json'),
+            binUrl: await ctx.blobs.putBytes(`${base}/voxel.bin`, bin, 'application/octet-stream'),
+          },
+        };
+      } catch (e) {
+        return { state: 'done', output: { skipped: String((e as Error).message).slice(0, 200) } };
+      }
+    },
+  },
+  {
+    name: 'publish',
+    needs: ['mirror', 'collision'],
+    run: async (ctx, job) => {
+      const m = out(job, 'mirror');
+      const c = out(job, 'collision');
       const doc: SpaceDoc = {
         id: job.input.spaceId,
         title: job.input.title,
@@ -77,6 +100,7 @@ export const spaceSteps: StepDef<PipelineCtx>[] = [
         splatUrl: m.splatUrl,
         format: m.format,
         panoUrl: m.panoUrl,
+        ...(c.metaUrl ? { collision: { metaUrl: c.metaUrl, binUrl: c.binUrl } } : {}),
         input: { videoUrl: job.input.videoUrl, prompt: job.input.prompt, imageUrl: job.input.imageUrl },
         jobId: job.id,
         createdAt: job.createdAt,

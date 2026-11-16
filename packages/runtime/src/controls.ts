@@ -26,6 +26,8 @@ export class LookController {
   pose: Pose;
   bounds: Bounds | null = null;
   obstacles: Bounds[] = [];
+  /** Optional scene collision (voxels): returns the corrected eye position. */
+  collide: ((p: [number, number, number]) => [number, number, number]) | null = null;
   private keys = new Set<string>();
   private pointers = new Map<number, { x: number; y: number; sx: number; sy: number; moved: boolean }>();
   private glide: { from: [number, number, number]; to: [number, number, number]; t: number; dur: number } | null = null;
@@ -165,6 +167,6 @@ export class LookController {
         z += push[1]!;
       }
     }
-    return [x, y, z];
+    return this.collide ? this.collide([x, y, z]) : [x, y, z];
   }
 }

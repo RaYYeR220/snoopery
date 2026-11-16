@@ -6,6 +6,7 @@ import { gcsStores } from './store/gcs';
 import { analyzeGlb } from './pipeline/analyze';
 import { describeObject, veniceVision } from './pipeline/describe';
 import { optimizeGlb } from './pipeline/optimize';
+import { voxelize } from './pipeline/voxel';
 import { tickAll } from './pipeline/loop';
 import type { PipelineCtx } from './pipeline/context';
 
@@ -34,6 +35,7 @@ const ctx: PipelineCtx = {
   blobs,
   describe: (photoUrl) => describeObject(vision, photoUrl),
   optimize: (glb) => optimizeGlb(glb),
+  voxelize,
   analyze: analyzeGlb,
   config: {
     articulateFrom: env('ARTICULATE_FROM', 'split') as 'split' | 'mesh',
@@ -45,7 +47,8 @@ const ctx: PipelineCtx = {
 const storage = new Storage();
 const app = await buildServer({
   ctx,
-  llm: veniceLLM(env('PUZZLE_MODEL', 'qwen-3-8-flash'), venice),
+  llm: veniceLLM(env('PUZZLE_MODEL', 'qwen-3-8-flash'), venice, { disableThinking: true }),
+  escalation: veniceLLM(env('PUZZLE_ESCALATION_MODEL', 'z-ai-glm-5-3-flash'), venice, { disableThinking: true }),
   tickToken: env('TICK_TOKEN'),
   generationPaused: () => process.env.GENERATION_PAUSED === '1',
   ledger,

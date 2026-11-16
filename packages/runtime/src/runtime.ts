@@ -23,6 +23,7 @@ import {
 import { jointMatrix } from '@snoopery/joints/transform';
 import type { Joint, PlacedObject, RoomDoc, Vec3 } from '@snoopery/schema';
 import { LookController, type Bounds, type Pose } from './controls';
+import { loadVoxelCollision, type VoxelCollision } from './voxel';
 
 export interface PartRef {
   objectId: string;
@@ -46,6 +47,8 @@ export interface Runtime {
   /** World-space size of a placed object's bounding box. */
   objectSize(objectId: string): Vec3 | null;
   floorY(): number;
+  /** Floor height under a point (scene collision when available). */
+  groundAt(x: number, z: number): number;
   setJoint(objectId: string, part: string, t: number): void;
   getJoint(objectId: string, part: string): number;
   animateJoint(objectId: string, part: string, to: number, ms?: number): Promise<void>;
@@ -292,6 +295,28 @@ export function createRuntime(container: HTMLElement, events: RuntimeEvents = {}
     forceFrames = Math.max(forceFrames, 2);
   }
 
+  let field: VoxelCollision | null = null;
+  const IDENT = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1].join();
+  const groundAt = (x: number, z: number, fromY = floorY + EYE_HEIGHT): number | null => {
+    const hit = field?.queryRay(x, fromY, z, 0, -1, 0, 4) ?? null;
+    return hit ? hit.y : null;
+  };
+  const collide = (p: [number, number, number]): [number, number, number] => {
+    let [x, y, z] = p;
+    const g = groundAt(x, z, y);
+    const floor = g !== null && y - g < EYE_HEIGHT + 0.6 ? g : floorY;
+    y = floor + EYE_HEIGHT;
+    const r = 0.2;
+    const bottom = floor + 0.4;
+    const top = y + 0.1;
+    const push = { x: 0, y: 0, z: 0 };
+    if (field!.queryCapsule(x, (bottom + top) / 2, z, Math.max(0, (top - bottom) / 2 - r), r, push)) {
+      x += push.x;
+      z += push.z;
+    }
+    return [x, y, z];
+  };
+
   async function loadSpace(splatSpec: RoomDoc['splat'], spawn: RoomDoc['spawn']) {
     const data = await SplatLoader.parseSplatData(formatOf(splatSpec.format), splatSpec.url, SplatLoader.SplatPackType.Compressed);
     const splat = (await SplatUtils.createSplat(data)) as unknown as Object3D;
@@ -303,6 +328,17 @@ export function createRuntime(container: HTMLElement, events: RuntimeEvents = {}
     floorY = spawn.pos[1] - EYE_HEIGHT;
     controls.pose = { pos: [...spawn.pos], yaw: spawn.yaw, pitch: spawn.pitch };
     computeBounds();
+    field = null;
+    controls.collide = null;
+    // Collision voxels are generated in the splat's own frame; use them when that frame is the world frame.
+    if (splatSpec.collision && splatSpec.transform.join() === IDENT) {
+      field = await loadVoxelCollision(splatSpec.collision.metaUrl, splatSpec.collision.binUrl).catch(() => null);
+      if (field) {
+        const g = groundAt(spawn.pos[0], spawn.pos[2], spawn.pos[1]);
+        if (g !== null) floorY = g;
+        controls.collide = collide;
+      }
+    }
     forceFrames = 10;
   }
 
@@ -380,6 +416,7 @@ export function createRuntime(container: HTMLElement, events: RuntimeEvents = {}
       return [box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z];
     },
     floorY: () => floorY,
+    groundAt: (x, z) => groundAt(x, z) ?? floorY,
     setJoint(objectId, part, t) {
       const p = parts.get(`${objectId}.${part}`);
       if (!p) return;

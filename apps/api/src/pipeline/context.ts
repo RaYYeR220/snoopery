@@ -25,6 +25,7 @@ export interface PipelineCtx {
   blobs: BlobStore;
   describe(photoUrl: string): Promise<ObjectDescription>;
   optimize(glb: Uint8Array): Promise<Uint8Array>;
+  voxelize(splat: Uint8Array, format: 'spz' | 'ply' | 'sog'): Promise<{ meta: Uint8Array; bin: Uint8Array }>;
   analyze(glb: Uint8Array, objectId: string, label: string, hints: ObjectDescription['parts']): Promise<{ joints: Joint[]; card: AffordanceCard; source: 'animation' | 'inferred' }>;
   config: PipelineConfig;
 }
