@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx watch src/main.ts",
     "start": "tsx src/main.ts",
-    "typecheck": "tsc --noEmit -p ."
+    "typecheck": "tsc --noEmit -p .",
+    "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
     "@fastify/cors": "^11.4.3",
