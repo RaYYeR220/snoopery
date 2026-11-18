@@ -158,6 +158,18 @@ describe('object pipeline', () => {
     expect(node('drawer').getTranslation()).toEqual([0, 0.26, 0.22]);
   });
 
+  it('picks up a job whose id was lost from the active list', async () => {
+    const { aholo } = fakeAholo();
+    const ctx = ctxWith(aholo);
+    await submit(ctx, 'object', { objectId: 'o6', photoUrl: 'https://phone/a.jpg' });
+    await submit(ctx, 'object', { objectId: 'o7', photoUrl: 'https://phone/b.jpg' });
+    // A submit racing a tick overwrote the list without the second job.
+    await ctx.docs.put('jobs/_active', (await ctx.docs.get<string[]>('jobs/_active'))!.slice(0, 1));
+    await runToEnd(ctx);
+    expect((await ctx.docs.get<ObjectDoc>('objects/o6'))?.status).toBe('ready');
+    expect((await ctx.docs.get<ObjectDoc>('objects/o7'))?.status).toBe('ready');
+  });
+
   it('surfaces the Aholo error text when articulation fails and leaves no published object', async () => {
     const { aholo } = fakeAholo({ articulateFails: true });
     const ctx = ctxWith(aholo);
