@@ -2,7 +2,7 @@ import { gunzipSync, gzipSync } from 'node:zlib';
 
 /**
  * Phone reconstructions come back in the camera's frame — often Z-up — while the player, the walk controller and
- * voxel collision assume Y-up with the floor at y = 0. This rewrites an SPZ (v2) so its gravity axis is +Y and
+ * voxel collision assume Y-up with the floor at y = 0. This rewrites an SPZ (read v2 or v3, written as v2) so its gravity axis is +Y and
  * the floor sits at 0. Positions move by a signed axis permutation, which is exact in SPZ's fixed point; rotations
  * are composed with the same rotation; SH band 1 is rotated and higher bands are dropped.
  */
@@ -30,8 +30,7 @@ export function decodeSpz(file: Uint8Array): Splat {
   const v = new DataView(raw.buffer, raw.byteOffset, raw.byteLength);
   if (v.getUint32(0, true) !== 0x5053474e) throw new Error('not an SPZ file');
   const version = v.getUint32(4, true);
-  // v3 packs rotations as "smallest three"; only v2 (what Reality writes today) is rewritten.
-  if (version !== 2) throw new Error(`SPZ version ${version} is not supported`);
+  if (version !== 2 && version !== 3) throw new Error(`SPZ version ${version} is not supported`);
   const n = v.getUint32(8, true);
   const shDegree = raw[12]!;
   const fractionalBits = raw[13]!;
@@ -49,10 +48,31 @@ export function decodeSpz(file: Uint8Array): Splat {
   const scales = raw.slice(o, (o += n * 3));
   const rotations = new Float64Array(n * 4);
   for (let i = 0; i < n; i++) {
-    const x = raw[o++]! / 127.5 - 1;
-    const y = raw[o++]! / 127.5 - 1;
-    const z = raw[o++]! / 127.5 - 1;
-    rotations.set([x, y, z, Math.sqrt(Math.max(0, 1 - x * x - y * y - z * z))], i * 4);
+    if (version === 2) {
+      const x = raw[o++]! / 127.5 - 1;
+      const y = raw[o++]! / 127.5 - 1;
+      const z = raw[o++]! / 127.5 - 1;
+      rotations.set([x, y, z, Math.sqrt(Math.max(0, 1 - x * x - y * y - z * z))], i * 4);
+      continue;
+    }
+    // v3 "smallest three": top 2 bits index the largest component; the other three are 1 sign + 9 magnitude
+    // bits each, scaled to [0, 1/√2], packed from the last component down.
+    let comp = (raw[o]! | (raw[o + 1]! << 8) | (raw[o + 2]! << 16) | (raw[o + 3]! << 24)) >>> 0;
+    o += 4;
+    const largest = comp >>> 30;
+    const q = [0, 0, 0, 0];
+    let sum = 0;
+    for (let k = 3; k >= 0; k--) {
+      if (k === largest) continue;
+      const mag = comp & 0x1ff;
+      const neg = (comp >>> 9) & 1;
+      comp >>>= 10;
+      const val = (Math.SQRT1_2 * mag) / 0x1ff;
+      q[k] = neg ? -val : val;
+      sum += val * val;
+    }
+    q[largest] = Math.sqrt(Math.max(0, 1 - sum));
+    rotations.set(q, i * 4);
   }
   const sh = raw.slice(o, o + n * SH_DIM[shDegree]! * 3);
   return { version, n, shDegree, fractionalBits, flags, positions, alphas, colors, scales, rotations, sh };
