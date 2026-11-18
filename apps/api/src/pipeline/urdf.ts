@@ -135,11 +135,12 @@ export async function assembleUrdfPackage(zip: Uint8Array): Promise<Articulated>
     let min = j.lower;
     let max = j.type === 'continuous' ? Math.PI / 2 : j.upper;
     if (j.type === 'prismatic' && Math.abs(max - min) < 0.05) {
-      // Lux3D's drawer travel often comes back as ~1 cm; a drawer opens to about half the depth of its carcass.
+      // Lux3D's drawer travel often comes back as ~1 cm and only the drawer front is segmented (no box behind it),
+      // so the front slides out by under a third of the carcass depth: clearly open, without exposing the gap.
       const b = getBounds(nodes.get(j.parent)!);
       const depth = Math.abs(axis[0]) * (b.max[0] - b.min[0]) + Math.abs(axis[1]) * (b.max[1] - b.min[1]) + Math.abs(axis[2]) * (b.max[2] - b.min[2]);
-      const travel = Math.min(0.35, Math.max(0.08, 0.45 * depth));
-      notes.push(`${j.child}: travel raised from ${(max * 100).toFixed(1)} cm to ${(travel * 100).toFixed(0)} cm (45% of the ${(depth * 100).toFixed(0)} cm carcass)`);
+      const travel = Math.min(0.22, Math.max(0.06, 0.3 * depth));
+      notes.push(`${j.child}: travel raised from ${(max * 100).toFixed(1)} cm to ${(travel * 100).toFixed(0)} cm (30% of the ${(depth * 100).toFixed(0)} cm carcass)`);
       min = 0;
       max = travel;
     }

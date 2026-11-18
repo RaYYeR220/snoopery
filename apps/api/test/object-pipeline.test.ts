@@ -146,10 +146,10 @@ describe('object pipeline', () => {
     const [lid, drawer] = doc!.joints as any[];
     expect(lid).toMatchObject({ part: 'lid', node: 'lid', type: 'revolute', axis: [-1, 0, 0], pivot: [0, 0.66, -0.23], min: 0 });
     expect(lid.max).toBeCloseTo(Math.PI / 2, 5);
-    // 1.3 cm of drawer travel is raised to 45% of the 50 cm carcass depth, and the correction is recorded.
+    // 1.3 cm of drawer travel is raised to 30% of the 50 cm carcass depth, and the correction is recorded.
     expect(drawer).toMatchObject({ part: 'drawer', type: 'prismatic', axis: [0, 0, 1], min: 0 });
-    expect(drawer.max).toBeCloseTo(0.225, 3);
-    expect(doc!.jointNotes).toEqual(['drawer: travel raised from 1.3 cm to 23 cm (45% of the 50 cm carcass)']);
+    expect(drawer.max).toBeCloseTo(0.15, 3);
+    expect(doc!.jointNotes).toEqual(['drawer: travel raised from 1.3 cm to 15 cm (30% of the 50 cm carcass)']);
     // One GLB whose node tree is the kinematic tree, with each link placed at its joint origin.
     const glb = await new NodeIO().readBinary((ctx.blobs as ReturnType<typeof memoryBlobs>).files.get('objects/o5/articulated.glb')!);
     const node = (name: string) => glb.getRoot().listNodes().find((n) => n.getName() === name)!;
