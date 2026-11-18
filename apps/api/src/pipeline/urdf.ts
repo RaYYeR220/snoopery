@@ -74,6 +74,12 @@ function rotate([x, y, z, w]: Q, [vx, vy, vz]: V3): V3 {
 
 const MOVING = new Set(['revolute', 'continuous', 'prismatic']);
 
+/** [rest, fully open] from URDF limits. */
+export function openRange(lower: number, upper: number): [number, number] {
+  if (lower <= 0 && upper >= 0) return [0, Math.abs(upper) >= Math.abs(lower) ? upper : lower];
+  return Math.abs(lower) <= Math.abs(upper) ? [lower, upper] : [upper, lower];
+}
+
 export interface Articulated {
   glb: Uint8Array;
   joints: Joint[];
@@ -132,8 +138,9 @@ export async function assembleUrdfPackage(zip: Uint8Array): Promise<Articulated>
   for (const j of urdf.joints) {
     if (!MOVING.has(j.type) || !nodes.has(j.child)) continue;
     const axis = rotate(quatFromRpy(j.rpy), j.axis);
-    let min = j.lower;
-    let max = j.type === 'continuous' ? Math.PI / 2 : j.upper;
+    // The part rests at 0 and opens towards whichever limit lies further from it; Lux3D often writes doors and
+    // lids as [-90°, 0], i.e. opening in the negative direction.
+    let [min, max] = j.type === 'continuous' ? [0, Math.PI / 2] : openRange(j.lower, j.upper);
     if (j.type === 'prismatic' && Math.abs(max - min) < 0.05) {
       // Lux3D's drawer travel often comes back as ~1 cm and only the drawer front is segmented (no box behind it),
       // so the front slides out by under a third of the carcass depth: clearly open, without exposing the gap.

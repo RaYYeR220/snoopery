@@ -192,7 +192,9 @@ export function toUSDA(room: RoomDoc, meshes: Record<string, ObjectMeshes>): str
       const { token, rot } = jointFrame(j.axis);
       const pivot = j.pivot.map((v) => v * s);
       const parent = j.parent !== null && partPrim.has(j.parent) ? partPrim.get(j.parent)! : `${root}/base`;
-      const [lo, hi] = revolute ? [j.min * RAD_TO_DEG, j.max * RAD_TO_DEG] : [j.min * s, j.max * s];
+      // A part may open towards a negative angle (min = rest 0, max < 0); USD limits are an ordered interval.
+      const [a, b] = revolute ? [j.min * RAD_TO_DEG, j.max * RAD_TO_DEG] : [j.min * s, j.max * s];
+      const [lo, hi] = [Math.min(a, b), Math.max(a, b)];
       w.line();
       w.open(`def ${revolute ? 'PhysicsRevoluteJoint' : 'PhysicsPrismaticJoint'} ${usdString(names.take(usdName(jointId(o.objectId, j.part))))}`);
       w.line(`uniform token physics:axis = ${usdString(token)}`);

@@ -6,6 +6,7 @@ import { memoryBlobs, memoryDocs } from '../src/store/memory';
 import { submit, tickAll } from '../src/pipeline/loop';
 import type { PipelineCtx } from '../src/pipeline/context';
 import type { ObjectDoc } from '../src/pipeline/object';
+import { openRange } from '../src/pipeline/urdf';
 
 const GLB = new Uint8Array([0x67, 0x6c, 0x54, 0x46, 2, 0, 0, 0]);
 
@@ -156,6 +157,13 @@ describe('object pipeline', () => {
     expect(node('lid').getParentNode()?.getName()).toBe('base');
     expect(node('lid').getTranslation()).toEqual([0, 0.66, -0.23]);
     expect(node('drawer').getTranslation()).toEqual([0, 0.26, 0.22]);
+  });
+
+  it('rests every part at 0 and opens it towards the farther URDF limit', () => {
+    expect(openRange(0, 1.57)).toEqual([0, 1.57]);
+    expect(openRange(-1.57, 0)).toEqual([0, -1.57]);
+    expect(openRange(-3.14159, 0)).toEqual([0, -3.14159]);
+    expect(openRange(0.1, 0.5)).toEqual([0.1, 0.5]);
   });
 
   it('picks up a job whose id was lost from the active list', async () => {

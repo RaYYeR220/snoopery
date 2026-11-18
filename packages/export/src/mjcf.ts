@@ -147,7 +147,7 @@ export function toMJCF(room: RoomDoc, meshes: Record<string, ObjectMeshes>): MJC
       const dyn = JOINT_DEFAULTS[j.type];
       lines.push(`${pad(depth)}<body ${attrs({ name: id })}>`);
       lines.push(
-        `${pad(depth + 1)}<joint ${attrs({ name: id, type: slide ? 'slide' : 'hinge' })} pos="${nums(pivot)}" axis="${nums(zUp(j.axis))}" range="${num(clean(j.min * k))} ${num(clean(j.max * k))}" limited="true" ${attrs(dyn)}/>`,
+        `${pad(depth + 1)}<joint ${attrs({ name: id, type: slide ? 'slide' : 'hinge' })} pos="${nums(pivot)}" axis="${nums(zUp(j.axis))}" range="${num(clean(Math.min(j.min, j.max) * k))} ${num(clean(Math.max(j.min, j.max) * k))}" limited="true" ${attrs(dyn)}/>`,
       );
       const part = addMesh(id, m.parts[j.part] ?? emptyMesh(), s);
       if (part) lines.push(`${pad(depth + 1)}${geom(id, 'snoopery_part', part.flat)}`);

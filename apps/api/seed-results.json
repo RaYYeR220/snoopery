@@ -3,54 +3,63 @@
     "label": "object photo-04-blanket-chest.jpg",
     "jobId": "dzbXGsWkeJtO",
     "ref": "IvFhxMBVoB",
-    "source": "photo-04-blanket-chest.jpg"
+    "source": "photo-04-blanket-chest.jpg",
+    "status": "done"
   },
   {
     "label": "object photo-03-jewellery-box.jpg",
     "jobId": "wCrgN02d1jyG",
     "ref": "AFBzGii6wW",
-    "source": "photo-03-jewellery-box.jpg"
+    "source": "photo-03-jewellery-box.jpg",
+    "status": "done"
   },
   {
     "label": "object photo-01-dresser.jpg",
     "jobId": "qV8SZQ6ke5Au",
     "ref": "oGLP0cak87",
-    "source": "photo-01-dresser.jpg"
+    "source": "photo-01-dresser.jpg",
+    "status": "done"
   },
   {
     "label": "object photo-05-wardrobe.jpg",
     "jobId": "oRSkDbPLBgW3",
     "ref": "mWlggo9rv5",
-    "source": "photo-05-wardrobe.jpg"
+    "source": "photo-05-wardrobe.jpg",
+    "status": "done"
   },
   {
     "label": "object photo-06-writing-desk.jpg",
     "jobId": "WIUL7VWPPhAO",
     "ref": "oHy3zYKy9Y",
-    "source": "photo-06-writing-desk.jpg"
+    "source": "photo-06-writing-desk.jpg",
+    "status": "done"
   },
   {
     "label": "object photo-07-suitcase.jpg",
     "jobId": "4vtu0zM8zfsW",
     "ref": "AK-d_6jsND",
-    "source": "photo-07-suitcase.jpg"
+    "source": "photo-07-suitcase.jpg",
+    "status": "done"
   },
   {
     "label": "object photo-08-commode.jpg",
     "jobId": "oFCLi44_Rsbx",
     "ref": "Sm_9Y1KRzF",
-    "source": "photo-08-commode.jpg"
+    "source": "photo-08-commode.jpg",
+    "status": "done"
   },
   {
     "label": "object photo-09-cupboard.jpg",
     "jobId": "6URbL0pQp2DH",
     "ref": "9LD7tv8bEH",
-    "source": "photo-09-cupboard.jpg"
+    "source": "photo-09-cupboard.jpg",
+    "status": "done"
   },
   {
     "label": "object photo-10-oak-chest.jpg",
     "jobId": "XFIbw3jugUrt",
     "ref": "0jaiuUv120",
-    "source": "photo-10-oak-chest.jpg"
+    "source": "photo-10-oak-chest.jpg",
+    "status": "done"
   }
 ]
