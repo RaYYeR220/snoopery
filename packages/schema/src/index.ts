@@ -101,6 +101,7 @@ export const roomDoc = z.object({
     .object({
       modelUrl: z.string().url(),
       clipUrls: z.record(z.enum(['idle', 'walk', 'open', 'pickup', 'cheer']), z.string().url()).optional(),
+      heightM: z.number().positive().max(3).optional(),
     })
     .optional(),
   splat: z.object({

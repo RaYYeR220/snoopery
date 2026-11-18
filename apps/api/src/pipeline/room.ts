@@ -1,6 +1,7 @@
 import type { StepDef, StepResult } from './engine';
 import { handoff, lux3dStep, mirror, out, type PipelineCtx } from './context';
 import { decodeSpz, detectUp, encodeSpz, footprintCentre, uprightSplat } from './upright';
+import { animationOnly } from './slim';
 
 /** A scanned or generated space a room can be built in. */
 export interface SpaceDoc {
@@ -197,14 +198,31 @@ export const characterSteps: StepDef<PipelineCtx>[] = [
         createdAt: job.createdAt,
       };
       await ctx.docs.put(`characters/${doc.id}`, doc);
-      // The newest character walks every room's solution.
-      const roles: Record<string, string> = { Idle_Loop: 'idle', Walk_Loop: 'walk', Chest_Open: 'open', PickUp_Table: 'pickup', Dance_Loop: 'cheer' };
-      const clipUrls = Object.fromEntries(Object.entries(doc.clips).flatMap(([name, url]) => (roles[name] ? [[roles[name], url]] : [])));
-      await ctx.docs.put('library/character', { modelUrl: doc.clips.Idle_Loop ?? doc.rigGlb, clipUrls });
+      await ctx.docs.put('library/character', await slimCharacter(ctx, doc));
       return { state: 'done', output: { characterId: doc.id } };
     },
   },
 ];
+
+const ROLES: Record<string, string> = { Idle_Loop: 'idle', Walk_Loop: 'walk', Chest_Open: 'open', PickUp_Table: 'pickup', Dance_Loop: 'cheer' };
+
+/**
+ * What the player downloads: one web-optimised model (the idle motion's file, textures capped) plus each motion as
+ * an animation-only file — ~100 MB of retargeted files become a few MB. The newest character walks every room.
+ */
+export async function slimCharacter(ctx: PipelineCtx, doc: CharacterDoc): Promise<{ modelUrl: string; clipUrls: Record<string, string>; heightM: number }> {
+  const base = `characters/${doc.id}/web`;
+  const modelSource = doc.clips.Idle_Loop ?? doc.rigGlb;
+  const modelUrl = await ctx.blobs.putBytes(`${base}/model.glb`, await ctx.optimize(await ctx.blobs.getBytes(modelSource)), 'model/gltf-binary');
+  const clipUrls: Record<string, string> = {};
+  for (const [name, url] of Object.entries(doc.clips)) {
+    const role = ROLES[name];
+    if (!role) continue;
+    clipUrls[role] = await ctx.blobs.putBytes(`${base}/${name}.glb`, await animationOnly(await ctx.blobs.getBytes(url)), 'model/gltf-binary');
+  }
+  // Snooping figures are small (a brass detective, not a person), so they never block the view of the room.
+  return { modelUrl, clipUrls, heightM: 1.25 };
+}
 
 /** Small item models (a key, a folded note) that rise out of a drawer when found. */
 export const propSteps: StepDef<PipelineCtx>[] = [

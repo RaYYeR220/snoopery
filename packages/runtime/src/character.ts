@@ -82,16 +82,18 @@ export class Character {
     this.root.add(model);
 
     const clips: Clip[] = [...((res.animations ?? []) as Clip[])];
-    for (const [, url] of Object.entries(spec.clipUrls ?? {})) {
-      if (!url) continue;
-      try {
-        clips.push(...(((await loadGlb(url)).animations ?? []) as Clip[]));
-      } catch {
-        /* a missing motion just falls back to idle */
-      }
-    }
+    // A motion file listed under a role is that role, whatever its clip is called (Lux3D names them animation_N).
+    const byRole = new Map<ClipRole, Clip>();
+    await Promise.all(
+      (Object.entries(spec.clipUrls ?? {}) as [ClipRole, string | undefined][]).map(async ([role, url]) => {
+        if (!url) return;
+        const found = ((await loadGlb(url).catch(() => null))?.animations ?? []) as Clip[]; // a missing motion falls back to idle
+        if (found[0]) byRole.set(role, found[0]);
+        clips.push(...found);
+      }),
+    );
     for (const role of Object.keys(NAME_HINTS) as ClipRole[]) {
-      const clip = clips.find((c) => NAME_HINTS[role].some((n) => c.name.toLowerCase().includes(n)));
+      const clip = byRole.get(role) ?? clips.find((c) => NAME_HINTS[role].some((n) => c.name.toLowerCase().includes(n)));
       if (!clip) continue;
       const action = this.mixer.clipAction(clip);
       action.active = false;

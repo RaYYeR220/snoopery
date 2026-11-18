@@ -55,7 +55,7 @@ async function download(label: string, url: string | undefined) {
   const buf = new Uint8Array(await res.arrayBuffer());
   const file = join(outDir, `${label}-${basename(new URL(url).pathname)}`);
   writeFileSync(file, buf);
-  (steps[label] as Record<string, unknown>).file = { path: file, bytes: buf.length };
+  ((steps[label] ??= {}) as Record<string, unknown>).file = { path: file, bytes: buf.length };
   save();
   return file;
 }

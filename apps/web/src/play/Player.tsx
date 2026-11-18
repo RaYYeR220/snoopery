@@ -195,9 +195,9 @@ export function Player({ id }: { id: string }) {
       figure = null;
     }
     const [sx, , sz] = room.spawn.pos;
-    // Start just ahead and to the right of the viewer, so the walk to each part is in view.
-    const fx = sx - Math.sin(room.spawn.yaw) * 0.6 + Math.cos(room.spawn.yaw) * 0.5;
-    const fz = sz - Math.cos(room.spawn.yaw) * 0.6 - Math.sin(room.spawn.yaw) * 0.5;
+    // Start well ahead and to the right of the viewer, so the figure never fills the view and every walk is in frame.
+    const fx = sx - Math.sin(room.spawn.yaw) * 1.6 + Math.cos(room.spawn.yaw) * 0.6;
+    const fz = sz - Math.cos(room.spawn.yaw) * 1.6 - Math.sin(room.spawn.yaw) * 0.6;
     figure?.place(fx, fz, room.spawn.yaw + Math.PI);
     figure?.show(true);
     const follow = setInterval(() => {
