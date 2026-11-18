@@ -73,6 +73,10 @@ function apply(step: StepState, r: StepResult) {
 export async function tickJob<C>(input: Job, defs: StepDef<C>[], ctx: C): Promise<Job> {
   const job: Job = structuredClone(input);
   if (job.status !== 'active') return job;
+  // Jobs created before a step was added to their pipeline get it as pending, in pipeline order.
+  if (defs.some((d) => !job.steps.some((s) => s.name === d.name))) {
+    job.steps = defs.map((d) => job.steps.find((s) => s.name === d.name) ?? { name: d.name, status: 'pending', attempts: 0 });
+  }
   const byName = new Map(job.steps.map((s) => [s.name, s]));
 
   const busy = new Set<string>();

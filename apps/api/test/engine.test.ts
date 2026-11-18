@@ -86,4 +86,11 @@ describe('pipeline engine', () => {
     expect(job.steps.map((s) => s.status)).toEqual(['skipped', 'done']);
     expect(job.status).toBe('done');
   });
+  it('adds steps that were introduced after a job was created', async () => {
+    const c = ctx();
+    const job = createJob('object', {}, defs().filter((d) => d.name !== 'c'));
+    const next = await tickJob(job, defs(), c);
+    expect(next.steps.map((st) => st.name)).toEqual(['a', 'b', 'c', 'd']);
+    expect(c.log).toContain('c');
+  });
 });
