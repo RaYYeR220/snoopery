@@ -5,7 +5,7 @@ import { ASSET_BASE, absolutize } from '../lib/api';
 import type { ObjectDoc } from '../studio/types';
 import { href } from '../lib/nav';
 
-const IDENTITY = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+const Y_DOWN_TO_UP = [1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1];
 
 /** One stage of the object's life, shown in its own small 3D view. */
 function Stage({ title, note, glb, joints, splat }: { title: string; note: string; glb?: string; joints?: Joint[]; splat?: string }) {
@@ -17,12 +17,19 @@ function Stage({ title, note, glb, joints, splat }: { title: string; note: strin
     const runtime = createRuntime(host.current);
     void (async () => {
       if (splat) {
-        await runtime.loadSpace({ url: splat, format: 'ply', transform: IDENTITY }, { pos: [0, 0.35, 1.4], yaw: 0, pitch: -0.2 });
+        const format = /\.spz(\?|$)/i.test(splat) ? 'spz' : 'ply';
+        // G1-Turbo writes Gaussians in the usual 3DGS camera frame (Y down); turn them upright next to the meshes.
+        await runtime.loadSpace({ url: splat, format, transform: Y_DOWN_TO_UP }, { pos: [0, 0.35, 1.4], yaw: 0, pitch: -0.2 });
       } else {
         runtime.controls.pose = { pos: [0, 0.55, 1.6], yaw: 0, pitch: -0.25 };
       }
       if (glb && alive) await runtime.addObject({ objectId: 'o', glbUrl: glb, joints: joints ?? [], position: [0, 0, 0], rotationY: 0.5, scale: 1 });
-      if (alive) setRt(runtime);
+      if (!alive) return;
+      // Frame the open pose so parts that swing out stay in view, then close them again.
+      for (const j of joints ?? []) runtime.setJoint('o', j.part, 1);
+      runtime.frame(joints?.length ? 1.0 : 1.1);
+      for (const j of joints ?? []) runtime.setJoint('o', j.part, 0);
+      setRt(runtime);
     })();
     return () => {
       alive = false;
@@ -89,7 +96,7 @@ export function ObjectInspector({ id }: { id: string }) {
             <span>the only input</span>
           </figcaption>
         </figure>
-        <Stage title="Splat preview" note="Lux3D Turbo, ~20 s" splat={doc.previewPly} />
+        <Stage title="Splat preview" note="Lux3D G1-Turbo · 3D Gaussians" splat={doc.previewSplat ?? doc.previewPly} />
         <Stage title="True-scale mesh" note={doc.card ? `Lux3D G1 · ${doc.card.sizeM.map((v) => v.toFixed(2)).join(' × ')} m` : 'Lux3D G1, size predicted'} glb={doc.meshGlb} />
         {doc.partsGlb && <Stage title="Parts" note="Lux3D part split" glb={doc.partsGlb} />}
         <Stage title="Openable" note="Lux3D articulation → recovered joints" glb={doc.webGlb} joints={joints} />

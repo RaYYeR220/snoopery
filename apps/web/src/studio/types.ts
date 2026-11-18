@@ -24,6 +24,7 @@ export interface ObjectDoc {
   photo: string;
   status: 'building' | 'ready' | 'failed';
   previewPly?: string;
+  previewSplat?: string;
   meshGlb?: string;
   partsGlb?: string;
   articulatedGlb?: string;

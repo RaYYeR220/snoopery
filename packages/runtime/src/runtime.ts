@@ -58,6 +58,8 @@ export interface Runtime {
   removeObject(objectId: string): void;
   /** World-space size of a placed object's bounding box. */
   objectSize(objectId: string): Vec3 | null;
+  /** Point the camera so everything in the scene (objects, and the dense part of a splat) fills the view. */
+  frame(margin?: number): void;
   /** A found item rises out of where it was hidden, turns once and fades: the moment of discovery. */
   flashItem(glbUrl: string, from: Vec3): Promise<void>;
   /** The figure that acts out a solution. Loads once; later calls reuse it. */
@@ -288,6 +290,7 @@ export function createRuntime(container: HTMLElement, events: RuntimeEvents = {}
     if (hidden.length) op.setState(hidden, SplatState.Deleted);
   }
 
+  let splatBox: Box3 | null = null;
   function computeBounds() {
     if (!splatObj) return;
     try {
@@ -295,6 +298,7 @@ export function createRuntime(container: HTMLElement, events: RuntimeEvents = {}
       const dense = SplatUtils.computeDenseBox(operator, 0.96);
       const a = new Vector3(...(dense.boxMin as Vec3)).applyMatrix4(splatObj.matrixWorld);
       const b = new Vector3(...(dense.boxMax as Vec3)).applyMatrix4(splatObj.matrixWorld);
+      splatBox = new Box3().setFromPoints([a, b] as never);
       const shrink = 0.35;
       controls.bounds = {
         min: [Math.min(a.x, b.x) + shrink, 0, Math.min(a.z, b.z) + shrink],
@@ -440,6 +444,19 @@ export function createRuntime(container: HTMLElement, events: RuntimeEvents = {}
       return [box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z];
     },
     floorY: () => floorY,
+    frame(margin = 1.1) {
+      const box = new Box3();
+      for (const root of objectRoots.values()) box.union(new Box3().setFromObject(root as never));
+      if (splatBox) box.union(splatBox);
+      if (box.isEmpty()) return;
+      const c = box.getCenter(new Vector3());
+      const r = (box.getSize(new Vector3()).length() / 2) * margin;
+      const half = (camera.fov * Math.PI) / 360;
+      const dist = r / Math.sin(Math.min(half, half * camera.aspect));
+      const pitch = -0.32;
+      controls.pose = { pos: [c.x, c.y - Math.sin(pitch) * dist, c.z + Math.cos(pitch) * dist], yaw: 0, pitch };
+      forceFrames = 10;
+    },
     async flashItem(glbUrl, from) {
       const cached = itemModels.get(glbUrl) ?? (async () => {
         const buf = await (await fetch(glbUrl)).arrayBuffer();

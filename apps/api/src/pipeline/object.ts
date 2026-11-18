@@ -2,6 +2,7 @@ import { unzipSync } from 'fflate';
 import type { StepDef } from './engine';
 import { handoff, lux3dStep, mirror, out, type PipelineCtx } from './context';
 import { assembleUrdfPackage } from './urdf';
+import { webPreview } from './preview';
 
 export interface ObjectDoc {
   id: string;
@@ -11,6 +12,8 @@ export interface ObjectDoc {
   status: 'building' | 'ready' | 'failed';
   jobId: string;
   previewPly?: string;
+  /** The preview thinned to SPZ for the browser. */
+  previewSplat?: string;
   meshGlb?: string;
   partsGlb?: string;
   articulatedGlb?: string;
@@ -62,7 +65,16 @@ export const objectSteps: StepDef<PipelineCtx>[] = [
     'imgTo3d',
     ['photo'],
     (ctx, job) => ctx.aholo.imgTo3d({ img: out(job, 'photo').holo ?? out(job, 'photo').photo, turbo: true }),
-    async (ctx, job, o) => ({ ply: await mirror(ctx, key(job.input.objectId, 'preview.ply'), o.ply) }),
+    async (ctx, job, o) => {
+      const ply = await mirror(ctx, key(job.input.objectId, 'preview.ply'), o.ply);
+      let web: string | undefined;
+      try {
+        if (ply) web = await ctx.blobs.putBytes(key(job.input.objectId, 'preview-web.spz'), await webPreview(await ctx.blobs.getBytes(ply)), 'application/octet-stream');
+      } catch {
+        web = undefined; // the raw preview is still kept; the inspector just shows no splat stage
+      }
+      return { ply, web };
+    },
   ),
   lux3dStep(
     'mesh',
@@ -151,6 +163,7 @@ export const objectSteps: StepDef<PipelineCtx>[] = [
         status: 'ready',
         jobId: job.id,
         previewPly: out(job, 'preview').ply,
+        ...(out(job, 'preview').web ? { previewSplat: out(job, 'preview').web } : {}),
         meshGlb: out(job, 'mesh').glb,
         partsGlb: out(job, 'split').glb,
         articulatedGlb: out(job, 'articulate').glb,

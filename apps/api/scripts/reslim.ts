@@ -9,6 +9,6 @@ const { docs, blobs } = gcsStores(process.env.ASSET_BUCKET ?? '');
 const id = process.argv[2]!;
 const doc = await docs.get<CharacterDoc>(`characters/${id}`);
 if (!doc) throw new Error(`no character ${id}`);
-const lib = await slimCharacter({ blobs, optimize: (b: Uint8Array) => optimizeGlb(b, 30_000) } as unknown as PipelineCtx, doc);
+const lib = await slimCharacter({ blobs, optimize: (b: Uint8Array) => optimizeGlb(b, 1_000_000) } as unknown as PipelineCtx, doc);
 await docs.put('library/character', lib);
 for (const url of [lib.modelUrl, ...Object.values(lib.clipUrls)]) console.log(url, (await blobs.getBytes(url)).length);
