@@ -4,7 +4,7 @@
 
 Your friend opens a link and lands inside your room. The chest at the foot of the bed lifts its lid, the desk drawer slides out on its runners, and somewhere in there is the key to get out. Snoopery turns a phone video of a real room and one photo of each piece of furniture into a 3D escape room where drawers, lids and doors genuinely open. An AI hides keys and clues inside them, a solver proves there is a way out before anything is published, and every room also exports as a robot task with the same hinges and slides.
 
-**Try it:** [snoopery.vercel.app](https://snoopery.vercel.app) · rooms: [The attic study](https://snoopery.vercel.app/play/uto4YH9awv) · [Grandmother's bedroom](https://snoopery.vercel.app/play/2XB7Xjzh2-) · [The living room, filmed](https://snoopery.vercel.app/play/yo9TXltcd9) · one object end to end: [blanket chest](https://snoopery.vercel.app/objects/IvFhxMBVoB). No sign-in, no install. Reviewers: [JUDGES.md](JUDGES.md) walks every claim in five minutes.
+**Try it:** [snoopery.vercel.app](https://snoopery.vercel.app) · rooms: [The attic study](https://snoopery.vercel.app/play/uto4YH9awv) · [Grandmother's bedroom](https://snoopery.vercel.app/play/2XB7Xjzh2-) · [The living room, filmed](https://snoopery.vercel.app/play/yo9TXltcd9) · one object end to end: [blanket chest](https://snoopery.vercel.app/objects/IvFhxMBVoB) · [2½-minute demo video](https://storage.googleapis.com/snoopery-assets/media/snoopery-demo.mp4). No sign-in, no install. Reviewers: [JUDGES.md](JUDGES.md) walks every claim in five minutes.
 
 <!-- numbers:start -->
 | Room designer, 40 rooms (seed 20261116) | One-shot model | Snoopery (verifier loop) |

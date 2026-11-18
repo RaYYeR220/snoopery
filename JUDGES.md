@@ -1,6 +1,6 @@
 # Review Snoopery in five minutes
 
-Everything below runs in a browser with no sign-in, install or wallet.
+Everything below runs in a browser with no sign-in, install or wallet. Prefer to watch first? The [2½-minute demo video](https://storage.googleapis.com/snoopery-assets/media/snoopery-demo.mp4) covers the same path.
 
 1. **Play a room (2 min).** Open [The attic study](https://snoopery.vercel.app/play/uto4YH9awv) and press *Start snooping*. Click the oak chest under the window: the lid swings up and a note and a key come out. The blue chest's drawer has a code lock; the two notes give 8 and 42. The shortest way out is 12 steps, proven before the room was published; the counter at the top left shows your steps against it. Stuck? *Hint* plans from wherever you are, and *Watch the solution* has a Lux3D-rigged detective walk the 12 steps.
 2. **One photo, one openable object (1 min).** Open the [blanket chest](https://snoopery.vercel.app/objects/IvFhxMBVoB): the museum photo, the Lux3D G1-Turbo splat preview, the G1 mesh at predicted true scale (0.90 × 0.70 × 0.50 m against the catalogue's 0.98 × 0.74 × 0.48 m), and the articulated model. Drag the sliders: the lid hinges on its back edge, the drawer slides. The joints are read from the URDF that Lux3D articulation returned; the page links that URDF and lists the one correction applied (drawer travel).
