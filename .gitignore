@@ -10,9 +10,7 @@ pilot/
 ui-variants/
 mockups/
 design-ref/
-.claude/
 .remember/
-docs/superpowers/
 SHIP-STATE.md
 BRIEF.md
 .playwright-mcp/

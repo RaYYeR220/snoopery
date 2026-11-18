@@ -21,7 +21,7 @@ const networkError = () => {
 const messages = [{ role: 'user' as const, content: 'hi' }];
 
 describe('veniceLLM', () => {
-  it('posts an OpenAI-style request with a token cap and reports usage', async () => {
+  it('posts a chat-completions request with a token cap and reports usage', async () => {
     const usage: LLMUsage[] = [];
     const { fn, calls } = fakeFetch([ok('{"a":1}')]);
     const llm = veniceLLM('qwen-3-8-flash', 'sk-test', { fetch: fn, onUsage: (u) => usage.push(u) });

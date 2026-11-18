@@ -1,0 +1,96 @@
+mujoco 4.0.1  export.zip
+model: 11 bodies, 7 joints, 12 geoms, 11 meshes, total mass 928.42 kg, timestep 0.002 s
+
+  OK   scene has 7 slide/hinge joints
+  OK   every room joint is in the scene
+
+[hinge] oHy3zYKy9Y__cylinder_top  range -1.5708 .. 0 rad  limited=True
+  OK   limited joint with a positive range (1.5708 rad)
+  OK   kinematic: qpos -1.5708 -> 0 moves the body 1.570796 rad (expected 1.570796)
+  OK   kinematic: motion axis (-0.5757, +0.8177, +0.0019) = world joint axis (-0.5757, +0.8177, +0.0019)
+  OK   room: world axis (-0.5757, +0.8177, +0.0019) matches the placement (-0.5757, +0.8177, +0.0019)
+  OK   room: hinge anchor (+0.0093, +0.6904, +0.8662) matches the placement (+0.0093, +0.6904, +0.8662) (err 8.34e-08 m)
+  OK   passive 2 s at -1.5708: drift 5.32e-04 rad
+  OK   driven to 0: q = -0.00000 rad after 3 s (error 0.00% of range)
+  OK   driven: body moved 1.57080 rad in the world, as the joint says
+  OK   coupling: other joints moved at most 2.39e-17 while driving
+  OK   limit: pushed towards 0.785398, held at q = 0.00980 rad (overshoot 0.62% of range)
+  OK   driven back to -1.5708: q = -1.57080 rad
+
+[slide] oHy3zYKy9Y__drawer_top  range 0 .. 0.403262 m  limited=True
+  OK   limited joint with a positive range (0.403262 m)
+  OK   kinematic: qpos 0 -> 0.403262 moves the body 0.403262 m (expected 0.403262)
+  OK   kinematic: motion direction (-0.8415, -0.5403, +0.0000) = world joint axis (-0.8415, -0.5403, +0.0000)
+  OK   room: world axis (-0.8415, -0.5403, +0.0000) matches the placement (-0.8415, -0.5403, +0.0000)
+  OK   passive 2 s at 0: drift 0.00e+00 m
+  OK   driven to 0.403262: q = 0.40326 m after 3 s (error 0.00% of range)
+  OK   driven: body moved 0.40326 m in the world, as the joint says
+  OK   coupling: other joints moved at most 6.96e-17 while driving
+  OK   limit: pushed towards 0.604893, held at q = 0.40578 m (overshoot 0.62% of range)
+  OK   driven back to 0: q = 0.00001 m
+
+[slide] oHy3zYKy9Y__drawer_bottom  range 0 .. 0.399374 m  limited=True
+  OK   limited joint with a positive range (0.399374 m)
+  OK   kinematic: qpos 0 -> 0.399374 moves the body 0.399374 m (expected 0.399374)
+  OK   kinematic: motion direction (-0.8415, -0.5403, +0.0000) = world joint axis (-0.8415, -0.5403, +0.0000)
+  OK   room: world axis (-0.8415, -0.5403, +0.0000) matches the placement (-0.8415, -0.5403, +0.0000)
+  OK   passive 2 s at 0: drift 0.00e+00 m
+  OK   driven to 0.399374: q = 0.39937 m after 3 s (error 0.00% of range)
+  OK   driven: body moved 0.39937 m in the world, as the joint says
+  OK   coupling: other joints moved at most 6.96e-17 while driving
+  OK   limit: pushed towards 0.599061, held at q = 0.40187 m (overshoot 0.62% of range)
+  OK   driven back to 0: q = 0.00000 m
+
+[hinge] 0jaiuUv120__lid  range 0 .. 1.57 rad  limited=True
+  OK   limited joint with a positive range (1.57 rad)
+  OK   kinematic: qpos 0 -> 1.57 moves the body 1.570000 rad (expected 1.570000)
+  OK   kinematic: motion axis (+0.4587, +0.8886, -0.0003) = world joint axis (+0.4587, +0.8886, -0.0003)
+  OK   room: world axis (+0.4587, +0.8886, -0.0003) matches the placement (+0.4587, +0.8886, -0.0003)
+  OK   room: hinge anchor (+0.3589, -0.8324, +0.8861) matches the placement (+0.3589, -0.8324, +0.8861) (err 3.23e-07 m)
+  OK   passive 2 s at 0: drift 6.31e-04 rad
+  OK   driven to 1.57: q = 1.57000 rad after 3 s (error 0.00% of range)
+  OK   driven: body moved 1.57000 rad in the world, as the joint says
+  OK   coupling: other joints moved at most 6.96e-17 while driving
+  OK   limit: pushed towards 2.355, held at q = 1.57979 rad (overshoot 0.62% of range)
+  OK   driven back to 0: q = 0.00000 rad
+
+[hinge] AK-d_6jsND__lid  range -1.91986 .. 0 rad  limited=True
+  OK   limited joint with a positive range (1.91986 rad)
+  OK   kinematic: qpos -1.91986 -> 0 moves the body 1.919862 rad (expected 1.919862)
+  OK   kinematic: motion axis (-0.5946, -0.8040, +0.0013) = world joint axis (-0.5946, -0.8040, +0.0013)
+  OK   room: world axis (-0.5946, -0.8040, +0.0013) matches the placement (-0.5946, -0.8040, +0.0013)
+  OK   room: hinge anchor (-2.8096, +1.1181, +0.0112) matches the placement (-2.8096, +1.1181, +0.0112) (err 5.07e-08 m)
+  FAIL passive 2 s at -1.91986: drift 1.92e+00 rad
+  OK   driven to 0: q = -0.00000 rad after 3 s (error 0.00% of range)
+  OK   driven: body moved 1.91986 rad in the world, as the joint says
+  OK   coupling: other joints moved at most 5.77e-17 while driving
+  OK   limit: pushed towards 0.959931, held at q = 0.01198 rad (overshoot 0.62% of range)
+  FAIL driven back to -1.91986: q = -0.01284 rad
+
+[hinge] IvFhxMBVoB__lid  range 0 .. 1.57 rad  limited=True
+  OK   limited joint with a positive range (1.57 rad)
+  OK   kinematic: qpos 0 -> 1.57 moves the body 1.570000 rad (expected 1.570000)
+  OK   kinematic: motion axis (+0.5443, -0.8387, +0.0167) = world joint axis (+0.5443, -0.8387, +0.0167)
+  OK   room: world axis (+0.5443, -0.8387, +0.0167) matches the placement (+0.5443, -0.8387, +0.0167)
+  OK   room: hinge anchor (-3.1518, -1.2632, +0.6776) matches the placement (-3.1518, -1.2632, +0.6776) (err 4.35e-07 m)
+  OK   passive 2 s at 0: drift 7.53e-04 rad
+  OK   driven to 1.57: q = 1.56998 rad after 3 s (error 0.00% of range)
+  OK   driven: body moved 1.56998 rad in the world, as the joint says
+  OK   coupling: other joints moved at most 1.08e-18 while driving
+  OK   limit: pushed towards 2.355, held at q = 1.57979 rad (overshoot 0.62% of range)
+  OK   driven back to 0: q = 0.00002 rad
+
+[slide] IvFhxMBVoB__drawer  range 0 .. 0.149486 m  limited=True
+  OK   limited joint with a positive range (0.149486 m)
+  OK   kinematic: qpos 0 -> 0.149486 moves the body 0.149486 m (expected 0.149486)
+  OK   kinematic: motion direction (+0.8391, +0.5440, +0.0000) = world joint axis (+0.8391, +0.5440, +0.0000)
+  OK   room: world axis (+0.8391, +0.5440, +0.0000) matches the placement (+0.8391, +0.5440, +0.0000)
+  OK   passive 2 s at 0: drift 0.00e+00 m
+  OK   driven to 0.149486: q = 0.14943 m after 3 s (error 0.03% of range)
+  OK   driven: body moved 0.14943 m in the world, as the joint says
+  OK   coupling: other joints moved at most 2.30e-17 while driving
+  OK   limit: pushed towards 0.224229, held at q = 0.15043 m (overshoot 0.63% of range)
+  OK   driven back to 0: q = 0.00005 m
+
+  OK   no simulator warnings
+RESULT: FAIL (75/77 checks, 7 joints)

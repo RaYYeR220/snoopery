@@ -1,0 +1,437 @@
+{
+  "capturedAt": "2026-11-18T19:45:10.322Z",
+  "objects": [
+    {
+      "objectId": "IvFhxMBVoB",
+      "label": "Pale blue painted wooden chest with drawer",
+      "photo": "photo-04-blanket-chest.jpg",
+      "credit": "Shakers (United Society of Believers), American, 1835–75. The Met object 1996, Friends of the American Wing Fund, 1966",
+      "license": "CC0",
+      "sizeM": {
+        "w": 0.9,
+        "h": 0.705,
+        "d": 0.498
+      },
+      "catalogueCm": {
+        "h": 74,
+        "w": 98.4,
+        "d": 48.3
+      },
+      "sizeErrorPct": {
+        "w": -9,
+        "h": -5,
+        "d": 3
+      },
+      "jointSource": "urdf",
+      "joints": [
+        {
+          "part": "lid",
+          "type": "revolute",
+          "open": 1.57
+        },
+        {
+          "part": "drawer",
+          "type": "prismatic",
+          "open": 0.149
+        }
+      ],
+      "notes": [
+        "drawer: travel raised from 1.2 cm to 15 cm (30% of the 50 cm carcass)"
+      ],
+      "seconds": {
+        "preview": 136,
+        "mesh": 418,
+        "articulate": 235
+      }
+    },
+    {
+      "objectId": "AFBzGii6wW",
+      "label": "Ornate carved wooden box",
+      "photo": "photo-03-jewellery-box.jpg",
+      "credit": "Unknown maker, France, late 1600s. Cleveland Museum of Art 1960.97",
+      "license": "CC0 (CMA Open Access)",
+      "sizeM": {
+        "w": 0.32,
+        "h": 0.132,
+        "d": 0.232
+      },
+      "catalogueCm": {
+        "h": 11.5,
+        "w": 29.2,
+        "d": 22.9
+      },
+      "sizeErrorPct": {
+        "w": 10,
+        "h": 15,
+        "d": 1
+      },
+      "jointSource": "urdf",
+      "joints": [
+        {
+          "part": "lid",
+          "type": "revolute",
+          "open": 1.571
+        }
+      ],
+      "notes": [],
+      "seconds": {
+        "preview": 134,
+        "mesh": 345,
+        "articulate": 171
+      }
+    },
+    {
+      "objectId": "oGLP0cak87",
+      "label": "White six-drawer dresser",
+      "photo": "photo-01-dresser.jpg",
+      "credit": "Max Vakhtbovych (Pexels @Artbovich)",
+      "license": "Pexels License",
+      "sizeM": {
+        "w": 1.3,
+        "h": 2.546,
+        "d": 0.874
+      },
+      "catalogueCm": null,
+      "sizeErrorPct": null,
+      "jointSource": "urdf",
+      "joints": [
+        {
+          "part": "drawer_top",
+          "type": "prismatic",
+          "open": 0.532
+        },
+        {
+          "part": "drawer_second",
+          "type": "prismatic",
+          "open": 0.519
+        },
+        {
+          "part": "drawer_third",
+          "type": "prismatic",
+          "open": 0.519
+        },
+        {
+          "part": "drawer_bottom",
+          "type": "prismatic",
+          "open": 0.521
+        }
+      ],
+      "notes": [],
+      "seconds": {
+        "preview": 130,
+        "mesh": 389,
+        "articulate": 342
+      }
+    },
+    {
+      "objectId": "mWlggo9rv5",
+      "label": "Walnut two-door cabinet with drawers",
+      "photo": "photo-05-wardrobe.jpg",
+      "credit": "Unknown maker, King County NY, c. 1710–40. CMA 2019.59",
+      "license": "CC0 (CMA Open Access)",
+      "sizeM": {
+        "w": 1.647,
+        "h": 1.9,
+        "d": 0.713
+      },
+      "catalogueCm": {
+        "h": 196.8,
+        "w": 184.2,
+        "d": 69.8
+      },
+      "sizeErrorPct": {
+        "w": -11,
+        "h": -3,
+        "d": 2
+      },
+      "jointSource": "urdf",
+      "joints": [
+        {
+          "part": "door_left",
+          "type": "revolute",
+          "open": -1.571
+        },
+        {
+          "part": "door_right",
+          "type": "revolute",
+          "open": 1.571
+        },
+        {
+          "part": "drawer_left",
+          "type": "prismatic",
+          "open": 0.425
+        },
+        {
+          "part": "drawer_right",
+          "type": "prismatic",
+          "open": 0.426
+        }
+      ],
+      "notes": [],
+      "seconds": {
+        "preview": 149,
+        "mesh": 661,
+        "articulate": 236
+      }
+    },
+    {
+      "objectId": "oHy3zYKy9Y",
+      "label": "Mahogany cylinder-top desk",
+      "photo": "photo-06-writing-desk.jpg",
+      "credit": "John & Thomas Seymour (attrib.), Boston, c. 1800. CMA 1987.11",
+      "license": "CC0 (CMA Open Access)",
+      "sizeM": {
+        "w": 1.249,
+        "h": 1.35,
+        "d": 0.588
+      },
+      "catalogueCm": {
+        "h": 105.4,
+        "w": 96,
+        "d": 49.9
+      },
+      "sizeErrorPct": {
+        "w": 30,
+        "h": 28,
+        "d": 18
+      },
+      "jointSource": "urdf",
+      "joints": [
+        {
+          "part": "cylinder_top",
+          "type": "revolute",
+          "open": -1.571
+        },
+        {
+          "part": "drawer_top",
+          "type": "prismatic",
+          "open": 0.403
+        },
+        {
+          "part": "drawer_bottom",
+          "type": "prismatic",
+          "open": 0.399
+        }
+      ],
+      "notes": [],
+      "seconds": {
+        "preview": 53,
+        "mesh": 591,
+        "articulate": 226
+      }
+    },
+    {
+      "objectId": "AK-d_6jsND",
+      "label": "Vintage canvas and leather suitcase",
+      "photo": "photo-07-suitcase.jpg",
+      "credit": "Mr. Mockup",
+      "license": "Pexels License",
+      "sizeM": {
+        "w": 0.6,
+        "h": 0.452,
+        "d": 0.259
+      },
+      "catalogueCm": null,
+      "sizeErrorPct": null,
+      "jointSource": "urdf",
+      "joints": [
+        {
+          "part": "lid",
+          "type": "revolute",
+          "open": -1.92
+        }
+      ],
+      "notes": [
+        "lid: swing capped at 110° (Lux3D returned 180°)"
+      ],
+      "seconds": {
+        "preview": 155,
+        "mesh": 476,
+        "articulate": 233
+      }
+    },
+    {
+      "objectId": "Sm_9Y1KRzF",
+      "label": "Mahogany three-drawer chest with marble top",
+      "photo": "photo-08-commode.jpg",
+      "credit": "Claude-Charles Saunier, mounts by Pierre Gouthière, c. 1775–92. CMA 1942.599",
+      "license": "CC0 (CMA Open Access)",
+      "sizeM": {
+        "w": 1.45,
+        "h": 1.106,
+        "d": 0.756
+      },
+      "catalogueCm": {
+        "h": 90.8,
+        "w": 131.5,
+        "d": 59.7
+      },
+      "sizeErrorPct": {
+        "w": 10,
+        "h": 22,
+        "d": 27
+      },
+      "jointSource": "urdf",
+      "joints": [
+        {
+          "part": "drawer_top_left",
+          "type": "prismatic",
+          "open": 0.549
+        },
+        {
+          "part": "drawer_top_center",
+          "type": "prismatic",
+          "open": 0.549
+        },
+        {
+          "part": "drawer_top_right",
+          "type": "prismatic",
+          "open": 0.548
+        },
+        {
+          "part": "drawer_middle",
+          "type": "prismatic",
+          "open": 0.55
+        },
+        {
+          "part": "drawer_bottom",
+          "type": "prismatic",
+          "open": 0.544
+        }
+      ],
+      "notes": [],
+      "seconds": {
+        "preview": 176,
+        "mesh": 766,
+        "articulate": 290
+      }
+    },
+    {
+      "objectId": "9LD7tv8bEH",
+      "label": "Rosewood two-door cabinet",
+      "photo": "photo-09-cupboard.jpg",
+      "credit": "Unknown maker, China, Ming dynasty, 1500s. CMA 1964.231",
+      "license": "CC0 (CMA Open Access)",
+      "sizeM": {
+        "w": 0.9,
+        "h": 0.786,
+        "d": 0.405
+      },
+      "catalogueCm": {
+        "h": 83.8,
+        "w": 43.2,
+        "d": null
+      },
+      "sizeErrorPct": {
+        "w": 108,
+        "h": -6,
+        "d": null
+      },
+      "jointSource": "urdf",
+      "joints": [
+        {
+          "part": "door_left",
+          "type": "revolute",
+          "open": -1.57
+        },
+        {
+          "part": "door_right",
+          "type": "revolute",
+          "open": -1.57
+        }
+      ],
+      "notes": [],
+      "seconds": {
+        "preview": 97,
+        "mesh": 523,
+        "articulate": 162
+      }
+    },
+    {
+      "objectId": "0jaiuUv120",
+      "label": "Oak chest with carved panels",
+      "photo": "photo-10-oak-chest.jpg",
+      "credit": "Unknown maker, England, c. 1490–1520. CMA 1971.281",
+      "license": "CC0 (CMA Open Access)",
+      "sizeM": {
+        "w": 1.5,
+        "h": 0.915,
+        "d": 0.641
+      },
+      "catalogueCm": {
+        "h": 69.6,
+        "w": 127,
+        "d": 41
+      },
+      "sizeErrorPct": {
+        "w": 18,
+        "h": 32,
+        "d": 56
+      },
+      "jointSource": "urdf",
+      "joints": [
+        {
+          "part": "lid",
+          "type": "revolute",
+          "open": 1.57
+        }
+      ],
+      "notes": [],
+      "seconds": {
+        "preview": 546,
+        "mesh": 961,
+        "articulate": 179
+      }
+    }
+  ],
+  "rooms": [
+    {
+      "id": "uto4YH9awv",
+      "title": "The attic study",
+      "space": {
+        "id": "CokrK20R_F",
+        "source": "generation",
+        "upAxis": "+z"
+      },
+      "objects": [
+        "oHy3zYKy9Y",
+        "0jaiuUv120",
+        "AK-d_6jsND",
+        "IvFhxMBVoB"
+      ],
+      "minSteps": 12
+    },
+    {
+      "id": "2XB7Xjzh2-",
+      "title": "Grandmother's bedroom",
+      "space": {
+        "id": "XkXWB3GLUW",
+        "source": "generation",
+        "upAxis": "+z"
+      },
+      "objects": [
+        "9LD7tv8bEH",
+        "Sm_9Y1KRzF",
+        "AFBzGii6wW",
+        "AK-d_6jsND"
+      ],
+      "minSteps": 11
+    },
+    {
+      "id": "yo9TXltcd9",
+      "title": "The living room, filmed",
+      "space": {
+        "id": "5OE1V4u98I",
+        "source": "reconstruction",
+        "upAxis": "+z"
+      },
+      "objects": [
+        "IvFhxMBVoB",
+        "AK-d_6jsND",
+        "9LD7tv8bEH",
+        "AFBzGii6wW"
+      ],
+      "minSteps": 5
+    }
+  ]
+}

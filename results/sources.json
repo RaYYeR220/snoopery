@@ -1,0 +1,102 @@
+[
+ {
+  "objectId": "IvFhxMBVoB",
+  "photo": "photo-04-blanket-chest.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Blanket_Chest_MET_DP263978.jpg",
+  "credit": "Shakers (United Society of Believers), American, 1835–75. The Met object 1996, Friends of the American Wing Fund, 1966",
+  "license": "CC0",
+  "catalogueCm": {
+   "h": 74,
+   "w": 98.4,
+   "d": 48.3
+  }
+ },
+ {
+  "objectId": "AFBzGii6wW",
+  "photo": "photo-03-jewellery-box.jpg",
+  "source": "https://clevelandart.org/art/1960.97",
+  "credit": "Unknown maker, France, late 1600s. Cleveland Museum of Art 1960.97",
+  "license": "CC0 (CMA Open Access)",
+  "catalogueCm": {
+   "h": 11.5,
+   "w": 29.2,
+   "d": 22.9
+  }
+ },
+ {
+  "objectId": "oGLP0cak87",
+  "photo": "photo-01-dresser.jpg",
+  "source": "https://www.pexels.com/photo/white-vintage-chest-of-drawers-8135253/",
+  "credit": "Max Vakhtbovych (Pexels @Artbovich)",
+  "license": "Pexels License",
+  "catalogueCm": null
+ },
+ {
+  "objectId": "mWlggo9rv5",
+  "photo": "photo-05-wardrobe.jpg",
+  "source": "https://clevelandart.org/art/2019.59",
+  "credit": "Unknown maker, King County NY, c. 1710–40. CMA 2019.59",
+  "license": "CC0 (CMA Open Access)",
+  "catalogueCm": {
+   "h": 196.8,
+   "w": 184.2,
+   "d": 69.8
+  }
+ },
+ {
+  "objectId": "oHy3zYKy9Y",
+  "photo": "photo-06-writing-desk.jpg",
+  "source": "https://clevelandart.org/art/1987.11",
+  "credit": "John & Thomas Seymour (attrib.), Boston, c. 1800. CMA 1987.11",
+  "license": "CC0 (CMA Open Access)",
+  "catalogueCm": {
+   "h": 105.4,
+   "w": 96,
+   "d": 49.9
+  }
+ },
+ {
+  "objectId": "AK-d_6jsND",
+  "photo": "photo-07-suitcase.jpg",
+  "source": "https://www.pexels.com/photo/brown-and-gray-travel-suitcase-12025430/",
+  "credit": "Mr. Mockup",
+  "license": "Pexels License",
+  "catalogueCm": null
+ },
+ {
+  "objectId": "Sm_9Y1KRzF",
+  "photo": "photo-08-commode.jpg",
+  "source": "https://clevelandart.org/art/1942.599",
+  "credit": "Claude-Charles Saunier, mounts by Pierre Gouthière, c. 1775–92. CMA 1942.599",
+  "license": "CC0 (CMA Open Access)",
+  "catalogueCm": {
+   "h": 90.8,
+   "w": 131.5,
+   "d": 59.7
+  }
+ },
+ {
+  "objectId": "9LD7tv8bEH",
+  "photo": "photo-09-cupboard.jpg",
+  "source": "https://clevelandart.org/art/1964.231",
+  "credit": "Unknown maker, China, Ming dynasty, 1500s. CMA 1964.231",
+  "license": "CC0 (CMA Open Access)",
+  "catalogueCm": {
+   "h": 83.8,
+   "w": 43.2,
+   "d": null
+  }
+ },
+ {
+  "objectId": "0jaiuUv120",
+  "photo": "photo-10-oak-chest.jpg",
+  "source": "https://clevelandart.org/art/1971.281",
+  "credit": "Unknown maker, England, c. 1490–1520. CMA 1971.281",
+  "license": "CC0 (CMA Open Access)",
+  "catalogueCm": {
+   "h": 69.6,
+   "w": 127,
+   "d": 41
+  }
+ }
+]

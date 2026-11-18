@@ -35,7 +35,7 @@ export class LLMHttpError extends Error {
   }
 }
 
-/** Venice chat completions (OpenAI-compatible). */
+/** Venice chat completions (the common chat-completions request format). */
 export function veniceLLM(model: string, apiKey: string, options: VeniceOptions = {}): LLM {
   const url = `${options.baseUrl ?? VENICE_BASE_URL}/chat/completions`;
   const send = options.fetch ?? fetch;
