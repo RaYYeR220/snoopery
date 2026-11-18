@@ -49,19 +49,33 @@ interface PartState {
 
 const FLOOR = -0.45;
 // Furniture placements in the scanned apartment (world, Y-up metres); yaw turns the object's front (+Z) about Y.
+// Sizes are the Lux3D objects' own predicted sizes (furniture.json); the jewellery box stands on the chest.
 const FURN = {
-  nightstand: { x: -5.62, z: 5.35, yaw: Math.PI / 2, w: 0.48, d: 0.42, h: 0.62 } as Furn,
-  dresser: { x: 5.75, z: -4.6, yaw: 0, w: 1.1, d: 0.48, h: 0.86 } as Furn,
-  wardrobe: { x: -8.62, z: -0.75, yaw: Math.PI / 2, w: 1.0, d: 0.58, h: 2.0 } as Furn,
-  jbox: { x: -5.6, z: 5.29, yaw: Math.PI / 2, w: 0.24, d: 0.2, h: 0.1, y0: FLOOR + 0.62 } as Furn,
+  nightstand: { x: -5.62, z: 5.35, yaw: Math.PI / 2, w: 0.9, d: 0.5, h: 0.7 } as Furn,
+  dresser: { x: 5.75, z: -4.6, yaw: 0, w: 1.45, d: 0.76, h: 1.11 } as Furn,
+  wardrobe: { x: -8.62, z: -0.75, yaw: Math.PI / 2, w: 1.65, d: 0.71, h: 1.9 } as Furn,
+  jbox: { x: -5.62, z: 5.35, yaw: Math.PI / 2, w: 0.32, d: 0.23, h: 0.13, y0: FLOOR + 0.7 } as Furn,
 };
+
+/** Points sampled from the published Lux3D objects (scripts/hero-furniture.ts): x, y, z, moving?, r, g, b. */
+export interface HeroObject {
+  id: string;
+  label: string;
+  part: string;
+  joint: { type: string; axis: number[]; pivot: number[]; max: number };
+  points: number[];
+}
+
+export async function loadFurniture(url: string): Promise<HeroObject[]> {
+  return (await (await fetch(url)).json()) as HeroObject[];
+}
 
 // Containers in the order of the example room's shortest solution.
 const C: Container[] = [
-  { id: 'nightstand.top_drawer', obj: 'nightstand', l1: 'nightstand · top drawer', l2: 'slide · 0–0.30 m', item: 'folded note', kind: 'prismatic', axis: [0, 0, 1], max: 0.3 },
-  { id: 'jewelry_box.lid', obj: 'jbox', l1: 'jewellery box · lid', l2: 'hinge · 0–1.9 rad · code 0412', item: 'brass key', kind: 'revolute', axis: [-1, 0, 0], max: 1.9 },
-  { id: 'dresser.drawer_2', obj: 'dresser', l1: 'dresser · drawer 2', l2: 'slide · key lock', item: 'small iron key', kind: 'prismatic', axis: [0, 0, 1], max: 0.34 },
-  { id: 'wardrobe.left_door', obj: 'wardrobe', l1: 'wardrobe · left door', l2: 'hinge · key lock', item: 'door key', kind: 'revolute', axis: [0, 1, 0], max: 1.75 },
+  { id: 'chest.drawer', obj: 'nightstand', l1: 'blue chest · drawer', l2: 'slide · 0–0.15 m', item: 'folded note', kind: 'prismatic', axis: [0, 0, 1], max: 0.15 },
+  { id: 'jewellery_box.lid', obj: 'jbox', l1: 'jewellery box · lid', l2: 'hinge · 0–90° · code 0412', item: 'brass key', kind: 'revolute', axis: [-1, 0, 0], max: 1.57 },
+  { id: 'commode.middle_drawer', obj: 'dresser', l1: 'commode · middle drawer', l2: 'slide · 0–0.55 m · key lock', item: 'small iron key', kind: 'prismatic', axis: [0, 0, 1], max: 0.55 },
+  { id: 'cabinet.left_door', obj: 'wardrobe', l1: 'walnut cabinet · left door', l2: 'hinge · 0–90° · key lock', item: 'door key', kind: 'revolute', axis: [0, 1, 0], max: 1.57 },
 ];
 
 const LV = 44;
@@ -207,8 +221,8 @@ export class TorchScene {
     this.resize();
   }
 
-  setRoom(room: { positions: Float32Array; colors: Uint8Array; count: number }) {
-    this.buildScene(room);
+  setRoom(room: { positions: Float32Array; colors: Uint8Array; count: number }, furniture: HeroObject[]) {
+    this.buildScene(room, furniture);
     this.fitCamera();
     for (let k = 0; k < 4; k++) this.anchors[k] = this.partScreen(k);
     this.torch.x = this.anchors[0]![0]!;
@@ -347,7 +361,7 @@ export class TorchScene {
     if (this.N) this.fitCamera();
   }
 
-  private buildScene(room: { positions: Float32Array; colors: Uint8Array; count: number }) {
+  private buildScene(room: { positions: Float32Array; colors: Uint8Array; count: number }, furniture: HeroObject[]) {
     const P = room.positions;
     const Cc = room.colors;
     const rand = rnd(11);
@@ -402,93 +416,16 @@ export class TorchScene {
       pts.push([x, y, z, -1, r, g, b, a]);
     }
     this.FS = pts.length;
-    const dens = 380;
-    const surf = (o: Furn, x0: number, x1: number, y0: number, y1: number, z0: number, z1: number, part: number, col: number[], a: number, faces = 'fblrtb', k = 1) => {
-      const add = (n: number, f: (u: number, v: number) => number[]) => {
-        for (let q = 0; q < n * k; q++) {
-          const L = f(rand(), rand());
-          const w = toWorld(o, L[0]!, L[1]!, L[2]!);
-          const j = rand() * 14 - 7;
-          pts.push([w[0], w[1], w[2], part, col[0]! + j, col[1]! + j, col[2]! + j, a]);
-        }
-      };
-      const W = x1 - x0;
-      const H = y1 - y0;
-      const D = z1 - z0;
-      const edge = (ax: number, ay: number, az: number, bx: number, by: number, bz: number) => {
-        const n = Math.max(2, (Math.hypot(bx - ax, by - ay, bz - az) / 0.014) * Math.min(1.6, k));
-        for (let q = 0; q <= n; q++) {
-          const u = q / n;
-          const w = toWorld(o, ax + (bx - ax) * u, ay + (by - ay) * u, az + (bz - az) * u);
-          pts.push([w[0], w[1], w[2], part, col[0]! * 0.78, col[1]! * 0.78, col[2]! * 0.78, Math.min(255, a + 15)]);
-        }
-      };
-      if (faces.includes('f')) {
-        edge(x0, y0, z1, x1, y0, z1);
-        edge(x0, y1, z1, x1, y1, z1);
-        edge(x0, y0, z1, x0, y1, z1);
-        edge(x1, y0, z1, x1, y1, z1);
+    // The real objects, in the order of the containers they stand in for (C[k].obj).
+    const keys = ['nightstand', 'jbox', 'dresser', 'wardrobe'] as const;
+    furniture.forEach((f, k) => {
+      const o = FURN[keys[k]!];
+      const P2 = f.points;
+      for (let i = 0; i < P2.length; i += 7) {
+        const w = toWorld(o, P2[i]!, P2[i + 1]!, P2[i + 2]!);
+        pts.push([w[0], w[1], w[2], P2[i + 3] ? k : -1, P2[i + 4]!, P2[i + 5]!, P2[i + 6]!, 240]);
       }
-      if (faces.includes('t')) {
-        edge(x0, y1, z0, x1, y1, z0);
-        edge(x0, y1, z0, x0, y1, z1);
-        edge(x1, y1, z0, x1, y1, z1);
-      }
-      if (faces.includes('l') && !faces.includes('t')) edge(x0, y0, z0, x0, y1, z0);
-      if (faces.includes('f')) add(W * H * dens, (u, v) => [x0 + u * W, y0 + v * H, z1]);
-      if (faces.includes('k')) add(W * H * dens * 0.6, (u, v) => [x0 + u * W, y0 + v * H, z0]);
-      if (faces.includes('l')) add(D * H * dens, (u, v) => [x0, y0 + v * H, z0 + u * D]);
-      if (faces.includes('r')) add(D * H * dens, (u, v) => [x1, y0 + v * H, z0 + u * D]);
-      if (faces.includes('t')) add(W * D * dens, (u, v) => [x0 + u * W, y1, z0 + v * D]);
-      if (faces.includes('b')) add(W * D * dens * 0.7, (u, v) => [x0 + u * W, y0, z0 + v * D]);
-    };
-    const oak = [148, 112, 78];
-    const walnut = [104, 74, 52];
-    const paint = [150, 142, 130];
-    {
-      const o = FURN.nightstand;
-      const hw = o.w / 2;
-      const hd = o.d / 2;
-      surf(o, -hw, hw, 0, 0.43, -hd, hd, -1, oak, 235, 'fklrt');
-      surf(o, -hw, hw, 0.58, 0.62, -hd, hd, -1, oak, 235, 'ftlr');
-      surf(o, -hw, -hw + 0.02, 0.43, 0.58, -hd, hd, -1, oak, 235, 'l');
-      surf(o, hw - 0.02, hw, 0.43, 0.58, -hd, hd, -1, oak, 235, 'r');
-      surf(o, -hw + 0.025, hw - 0.025, 0.445, 0.58, -hd + 0.02, hd, 0, [170, 132, 94], 245, 'flrb');
-      surf(o, -0.08, 0.06, 0.47, 0.471, -0.02, 0.1, 0, [236, 230, 214], 250, 't', 3);
-    }
-    {
-      const o = FURN.dresser;
-      const hw = o.w / 2;
-      const hd = o.d / 2;
-      surf(o, -hw, hw, 0, o.h, -hd, hd, -1, walnut, 235, 'klrt');
-      [
-        [0.06, 0.3],
-        [0.31, 0.55],
-        [0.56, 0.82],
-      ].forEach(([a, b], k) => {
-        const part = k === 1 ? 2 : -1;
-        surf(o, -hw + 0.02, hw - 0.02, a!, b!, -hd + 0.02, hd, part, k === 1 ? [126, 92, 66] : walnut, 240, part === -1 ? 'f' : 'flrb');
-      });
-      surf(o, -0.1, 0.02, 0.36, 0.365, -0.05, 0.06, 2, [196, 178, 120], 250, 't', 4);
-    }
-    {
-      const o = FURN.jbox;
-      surf(o, -0.12, 0.12, 0, 0.1, -0.1, 0.1, -1, [58, 40, 44], 245, 'fklr', 3);
-      surf(o, -0.11, 0.11, 0.015, 0.016, -0.09, 0.09, -1, [150, 40, 52], 245, 't', 3);
-      surf(o, -0.125, 0.125, 0.1, 0.135, -0.105, 0.105, 1, [74, 52, 56], 250, 'tf', 3);
-      surf(o, -0.04, 0.04, 0.03, 0.031, -0.03, 0.04, -1, [226, 182, 92], 255, 't', 6);
-    }
-    {
-      const o = FURN.wardrobe;
-      const hw = o.w / 2;
-      const hd = o.d / 2;
-      surf(o, -hw, hw, 0, o.h, -hd, hd - 0.02, -1, paint, 225, 'klrt');
-      surf(o, -hw + 0.02, hw - 0.02, 0.02, o.h - 0.02, -hd + 0.02, -hd + 0.021, -1, [120, 116, 108], 200, 'f', 0.8);
-      surf(o, -hw + 0.02, hw - 0.02, 1.4, 1.42, -hd, hd - 0.03, -1, [140, 136, 128], 200, 't', 1.4);
-      surf(o, -hw, 0, 0, o.h, hd - 0.02, hd, 3, [166, 158, 146], 235, 'f');
-      surf(o, 0, hw, 0, o.h, hd - 0.02, hd, -1, [166, 158, 146], 235, 'f');
-      surf(o, -0.32, -0.18, 0.9, 1.05, -0.1, 0.12, -1, [210, 170, 90], 250, 'tf', 2.5);
-    }
+    });
     const N = (this.N = pts.length);
     this.PX = new Float32Array(N);
     this.PY = new Float32Array(N);
@@ -526,22 +463,25 @@ export class TorchScene {
       this.DG[i] = g * 0.3 + 8;
       this.DB[i] = b * 0.3 + 8;
     }
-    const nsO = FURN.nightstand;
-    const jbO = FURN.jbox;
-    const drO = FURN.dresser;
-    const wdO = FURN.wardrobe;
     const ax = (o: Furn, a: number[]) => {
       const c = Math.cos(o.yaw);
       const s = Math.sin(o.yaw);
       return [a[0]! * c + a[2]! * s, a[1]!, -a[0]! * s + a[2]! * c];
     };
-    const mk = (k: number, pivot: number[], axis: number[], o: Furn, box: number[]): PartState => ({ pivot, axis, o, box, open: 0, target: 0, lit: 0, hold: 0, dwell: 0, manual: false, c: C[k]!, M: null, T: [0, 0, 0] });
-    this.parts = [
-      mk(0, toWorld(nsO, 0, 0.5125, 0.035), ax(nsO, [0, 0, 1]), nsO, [-0.215, 0.215, 0.445, 0.58, nsO.d / 2]),
-      mk(1, toWorld(jbO, 0, 0.1, -0.1), ax(jbO, [-1, 0, 0]), jbO, [-0.125, 0.125, 0.1, 0.135, 0.105]),
-      mk(2, toWorld(drO, 0, 0.43, drO.d / 2), ax(drO, [0, 0, 1]), drO, [-drO.w / 2 + 0.02, drO.w / 2 - 0.02, 0.31, 0.55, drO.d / 2]),
-      mk(3, toWorld(wdO, -wdO.w / 2, 0, wdO.d / 2 - 0.01), ax(wdO, [0, 1, 0]), wdO, [-wdO.w / 2, 0, 0, wdO.h, wdO.d / 2]),
-    ];
+    this.parts = furniture.map((f, k): PartState => {
+      const o = FURN[keys[k]!];
+      // Label anchor: the moving part's front face, from its own sampled points.
+      let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity, z1 = -Infinity;
+      for (let i = 0; i < f.points.length; i += 7) {
+        if (!f.points[i + 3]) continue;
+        x0 = Math.min(x0, f.points[i]!); x1 = Math.max(x1, f.points[i]!);
+        y0 = Math.min(y0, f.points[i + 1]!); y1 = Math.max(y1, f.points[i + 1]!);
+        z1 = Math.max(z1, f.points[i + 2]!);
+      }
+      const j = f.joint;
+      const c: Container = { ...C[k]!, axis: j.axis as [number, number, number], max: j.max };
+      return { pivot: toWorld(o, j.pivot[0]!, j.pivot[1]!, j.pivot[2]!), axis: ax(o, j.axis), o, box: [x0, x1, y0, y1, z1], open: 0, target: 0, lit: 0, hold: 0, dwell: 0, manual: false, c, M: null, T: [0, 0, 0] };
+    });
   }
 
   private fitCamera() {

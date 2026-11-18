@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { loadRoomPoints, TorchScene } from './torch';
+import { loadFurniture, loadRoomPoints, TorchScene } from './torch';
 import type { Lang } from '../lib/i18n';
 import { href, publicUrl } from '../lib/nav';
 
@@ -75,8 +75,8 @@ export function TorchHero({ lang, onLang }: { lang: Lang; onLang: (l: Lang) => v
     });
     scene.attach(hero.current);
     let alive = true;
-    loadRoomPoints(publicUrl('hero/room.bin'))
-      .then((room) => alive && scene.setRoom(room))
+    Promise.all([loadRoomPoints(publicUrl('hero/room.bin')), loadFurniture(publicUrl('hero/furniture.json'))])
+      .then(([room, furniture]) => alive && scene.setRoom(room, furniture))
       .catch(() => undefined);
     requestAnimationFrame(() => setReady(true));
     return () => {
