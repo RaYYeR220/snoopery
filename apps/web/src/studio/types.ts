@@ -30,7 +30,9 @@ export interface ObjectDoc {
   webGlb?: string;
   joints?: Joint[];
   card?: AffordanceCard;
-  jointSource?: 'animation' | 'inferred';
+  jointSource?: 'urdf' | 'animation' | 'inferred';
+  jointNotes?: string[];
+  urdfPackage?: string;
   motionPrompt?: string;
 }
 

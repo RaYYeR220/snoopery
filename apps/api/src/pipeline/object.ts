@@ -1,6 +1,7 @@
 import { unzipSync } from 'fflate';
 import type { StepDef } from './engine';
 import { handoff, lux3dStep, mirror, out, type PipelineCtx } from './context';
+import { assembleUrdfPackage } from './urdf';
 
 export interface ObjectDoc {
   id: string;
@@ -16,13 +17,19 @@ export interface ObjectDoc {
   webGlb?: string;
   joints?: unknown[];
   card?: unknown;
-  jointSource?: 'animation' | 'inferred';
+  jointSource?: 'urdf' | 'animation' | 'inferred';
+  /** Corrections applied to the joints Lux3D returned (e.g. drawer travel), shown next to the object. */
+  jointNotes?: string[];
+  /** The URDF package exactly as articulation returned it (robot.urdf + one GLB per link). */
+  urdfPackage?: string;
   motionPrompt?: string;
   createdAt: string;
   library: boolean;
 }
 
 const key = (id: string, file: string) => `objects/${id}/${file}`;
+
+const isZip = (b: Uint8Array) => b[0] === 0x50 && b[1] === 0x4b;
 
 function glbFromArchive(bytes: Uint8Array): Uint8Array {
   if (bytes[0] === 0x67 && bytes[1] === 0x6c && bytes[2] === 0x54 && bytes[3] === 0x46) return bytes; // "glTF"
@@ -93,8 +100,19 @@ export const objectSteps: StepDef<PipelineCtx>[] = [
       const src = o.glb ?? o.zip ?? o.url;
       if (!src) throw new Error('articulation returned no file');
       const raw = await ctx.blobs.getBytes(src);
-      const glb = glbFromArchive(raw);
-      return { glb: await ctx.blobs.putBytes(key(job.input.objectId, 'articulated.glb'), glb, 'model/gltf-binary'), source: src };
+      const id = job.input.objectId as string;
+      if (isZip(raw) && Object.keys(unzipSync(raw)).some((n) => n.toLowerCase().endsWith('.urdf'))) {
+        // Current Lux3D articulation: a URDF with one mesh per link. Its joints are authoritative.
+        const a = await assembleUrdfPackage(raw);
+        return {
+          glb: await ctx.blobs.putBytes(key(id, 'articulated.glb'), a.glb, 'model/gltf-binary'),
+          urdfPackage: await ctx.blobs.putBytes(key(id, 'articulation-urdf.zip'), raw, 'application/zip'),
+          joints: a.joints,
+          notes: a.notes,
+          source: src,
+        };
+      }
+      return { glb: await ctx.blobs.putBytes(key(id, 'articulated.glb'), glbFromArchive(raw), 'model/gltf-binary'), source: src };
     },
   ),
   {
@@ -113,7 +131,7 @@ export const objectSteps: StepDef<PipelineCtx>[] = [
     run: async (ctx, job) => {
       const d = out(job, 'describe');
       const bytes = await ctx.blobs.getBytes(out(job, 'optimize').glb);
-      const r = await ctx.analyze(bytes, job.input.objectId, d.label, d.parts ?? []);
+      const r = await ctx.analyze(bytes, job.input.objectId, d.label, d.parts ?? [], out(job, 'articulate').joints ?? []);
       if (r.joints.length === 0) return { state: 'failed', error: 'no openable part found in the articulated model' };
       return { state: 'done', output: r };
     },
@@ -140,6 +158,8 @@ export const objectSteps: StepDef<PipelineCtx>[] = [
         joints: j.joints,
         card: j.card,
         jointSource: j.source,
+        ...(out(job, 'articulate').notes?.length ? { jointNotes: out(job, 'articulate').notes } : {}),
+        ...(out(job, 'articulate').urdfPackage ? { urdfPackage: out(job, 'articulate').urdfPackage } : {}),
         motionPrompt: d.motionPrompt,
         createdAt: job.createdAt,
         library: job.input.library !== false,

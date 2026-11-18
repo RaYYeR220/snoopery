@@ -72,9 +72,15 @@ export function ObjectInspector({ id }: { id: string }) {
       <h1>{doc.label}</h1>
       <p className="sn-muted">
         From one photo to a piece of furniture whose parts really move. {joints.length} recovered joint{joints.length === 1 ? '' : 's'}
-        {doc.jointSource === 'inferred' ? ' (inferred from geometry)' : ' (from the articulation animation)'}.
+        {doc.jointSource === 'urdf' ? ' (read from the URDF that Lux3D articulation returned)' : doc.jointSource === 'inferred' ? ' (inferred from geometry)' : ' (from the articulation animation)'}.
         {doc.motionPrompt && <> Motion prompt: “{doc.motionPrompt}”</>}
       </p>
+      {(doc.jointNotes?.length || doc.urdfPackage) && (
+        <p className="sn-muted">
+          {doc.jointNotes?.map((n) => <span key={n}>Adjusted: {n}. </span>)}
+          {doc.urdfPackage && <a href={doc.urdfPackage}>Download the URDF package</a>}
+        </p>
+      )}
       <div className="sn-stages">
         <figure className="sn-stage">
           <div className="sn-stage-view">{doc.photo ? <img src={doc.photo} alt="" /> : <span className="sn-muted">no photo</span>}</div>
@@ -84,8 +90,8 @@ export function ObjectInspector({ id }: { id: string }) {
           </figcaption>
         </figure>
         <Stage title="Splat preview" note="Lux3D Turbo, ~20 s" splat={doc.previewPly} />
-        <Stage title="True-scale mesh" note="Lux3D G1, size predicted" glb={doc.meshGlb} />
-        <Stage title="Parts" note="Lux3D part split" glb={doc.partsGlb} />
+        <Stage title="True-scale mesh" note={doc.card ? `Lux3D G1 · ${doc.card.sizeM.map((v) => v.toFixed(2)).join(' × ')} m` : 'Lux3D G1, size predicted'} glb={doc.meshGlb} />
+        {doc.partsGlb && <Stage title="Parts" note="Lux3D part split" glb={doc.partsGlb} />}
         <Stage title="Openable" note="Lux3D articulation → recovered joints" glb={doc.webGlb} joints={joints} />
       </div>
     </main>

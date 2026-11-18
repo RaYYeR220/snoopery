@@ -67,9 +67,12 @@ for (let i = 0; i < args.length; i++) {
     const r = await call<{ characterId: string; jobId: string }>('/characters', { prompt: value });
     queued.push({ label: 'character', jobId: r.jobId, ref: r.characterId });
   }
+  console.log(`queued ${queued.at(-1)!.label} → job ${queued.at(-1)!.jobId}`);
   if (extra) i++;
   i++;
 }
+// Written before polling so a dropped connection never loses which job came from which file.
+writeFileSync('seed-results.json', JSON.stringify(queued, null, 2));
 
 console.log(`submitted ${queued.length} jobs`);
 const pending = new Set(queued.map((q) => q.jobId));
@@ -77,7 +80,8 @@ while (pending.size) {
   await new Promise((r) => setTimeout(r, 20_000));
   for (const q of queued) {
     if (!pending.has(q.jobId)) continue;
-    const job = await call<Job>(`/jobs/${q.jobId}`);
+    const job = await call<Job>(`/jobs/${q.jobId}`).catch((e: Error) => (console.warn(`poll ${q.jobId}: ${e.message}`), null));
+    if (!job) continue;
     if (job.status === 'active') continue;
     pending.delete(q.jobId);
     q.status = job.status;

@@ -20,3 +20,4 @@ BRIEF.md
 coverage/
 *.log
 apps/web/public/dev/
+seed-runs/
