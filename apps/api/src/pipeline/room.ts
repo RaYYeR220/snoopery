@@ -1,5 +1,6 @@
 import type { StepDef, StepResult } from './engine';
 import { handoff, lux3dStep, mirror, out, type PipelineCtx } from './context';
+import { decodeSpz, detectUp, encodeSpz, footprintCentre, uprightSplat } from './upright';
 
 /** A scanned or generated space a room can be built in. */
 export interface SpaceDoc {
@@ -10,6 +11,10 @@ export interface SpaceDoc {
   format: 'spz' | 'ply' | 'sog';
   panoUrl?: string;
   collision?: { metaUrl: string; binUrl: string };
+  /** Where the player starts by default (middle of the footprint, eye height). */
+  spawn?: { pos: [number, number, number]; yaw: number; pitch: number };
+  /** The axis the source used as up before it was baked onto +Y. */
+  upAxis?: string;
   input: { videoUrl?: string; prompt?: string; imageUrl?: string };
   jobId?: string;
   createdAt: string;
@@ -67,11 +72,34 @@ export const spaceSteps: StepDef<PipelineCtx>[] = [
     },
   },
   {
-    // Walk collision is a nicety: if voxelizing fails the space still publishes, walking just uses room bounds.
-    name: 'collision',
+    // Reconstructions arrive in the camera's frame (often Z-up). Bake gravity onto +Y with the floor at 0 so the
+    // player, walking and collision voxels all share one frame; pick a spawn in the middle of the footprint.
+    name: 'upright',
     needs: ['mirror'],
     run: async (ctx, job) => {
       const m = out(job, 'mirror');
+      if (m.format !== 'spz') return { state: 'done', output: { splatUrl: m.splatUrl, format: m.format } };
+      try {
+        const s = decodeSpz(await ctx.blobs.getBytes(m.splatUrl));
+        const d = detectUp(s);
+        if (d.up === '+y') {
+          const [x, z] = footprintCentre(s);
+          return { state: 'done', output: { splatUrl: m.splatUrl, format: m.format, up: d.up, spawn: { pos: [x, d.floor + 1.55, z], yaw: 0, pitch: 0 } } };
+        }
+        const r = uprightSplat(s, d);
+        const splatUrl = await ctx.blobs.putBytes(`spaces/${job.input.spaceId}/scene-upright.spz`, encodeSpz(s), 'application/octet-stream');
+        return { state: 'done', output: { splatUrl, format: 'spz', up: r.up, heightM: r.heightM, spawn: { pos: [r.centre[0], 1.55, r.centre[1]], yaw: 0, pitch: 0 } } };
+      } catch (e) {
+        return { state: 'done', output: { splatUrl: m.splatUrl, format: m.format, skipped: String((e as Error).message).slice(0, 200) } };
+      }
+    },
+  },
+  {
+    // Walk collision is a nicety: if voxelizing fails the space still publishes, walking just uses room bounds.
+    name: 'collision',
+    needs: ['upright'],
+    run: async (ctx, job) => {
+      const m = out(job, 'upright');
       try {
         const { meta, bin } = await ctx.voxelize(await ctx.blobs.getBytes(m.splatUrl), m.format);
         const base = `spaces/${job.input.spaceId}/voxel`;
@@ -89,17 +117,20 @@ export const spaceSteps: StepDef<PipelineCtx>[] = [
   },
   {
     name: 'publish',
-    needs: ['mirror', 'collision'],
+    needs: ['mirror', 'upright', 'collision'],
     run: async (ctx, job) => {
       const m = out(job, 'mirror');
+      const u = out(job, 'upright');
       const c = out(job, 'collision');
       const doc: SpaceDoc = {
         id: job.input.spaceId,
         title: job.input.title,
         source: job.input.videoUrl ? 'reconstruction' : 'generation',
-        splatUrl: m.splatUrl,
-        format: m.format,
+        splatUrl: u.splatUrl,
+        format: u.format,
         panoUrl: m.panoUrl,
+        ...(u.spawn ? { spawn: u.spawn } : {}),
+        ...(u.up ? { upAxis: u.up } : {}),
         ...(c.metaUrl ? { collision: { metaUrl: c.metaUrl, binUrl: c.binUrl } } : {}),
         input: { videoUrl: job.input.videoUrl, prompt: job.input.prompt, imageUrl: job.input.imageUrl },
         jobId: job.id,
