@@ -1,4 +1,5 @@
 import { API_URL } from '../lib/api';
+import { href } from '../lib/nav';
 
 const MCP_CONFIG = `{
   "mcpServers": {
@@ -33,9 +34,9 @@ export function Docs() {
   return (
     <main className="sn-doc">
       <nav className="sn-doc-nav">
-        <a href="/" className="sn-logo">Snoopery</a>
-        <a href="/rooms">Rooms</a>
-        <a href="/studio">Make a room</a>
+        <a href={href('/')} className="sn-logo">Snoopery</a>
+        <a href={href('/rooms')}>Rooms</a>
+        <a href={href('/studio')}>Make a room</a>
       </nav>
       <h1>For developers and robots</h1>
       <p className="sn-muted">Everything a room is made of is open: the joints recovered from Aholo Lux3D articulation, the solver that proves a room, and the same room as a simulator task.</p>

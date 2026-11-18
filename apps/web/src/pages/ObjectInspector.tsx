@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { createRuntime, type Runtime } from '@snoopery/runtime';
 import type { Joint } from '@snoopery/schema';
-import { ASSET_BASE } from '../lib/api';
+import { ASSET_BASE, absolutize } from '../lib/api';
 import type { ObjectDoc } from '../studio/types';
+import { href } from '../lib/nav';
 
 const IDENTITY = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 
@@ -56,7 +57,7 @@ export function ObjectInspector({ id }: { id: string }) {
     if (!/^[A-Za-z0-9_-]{2,40}$/.test(id)) return setError('Not a valid object id.');
     fetch(`${ASSET_BASE}/docs/objects/${encodeURIComponent(id)}.json`, { cache: 'no-cache' })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-      .then(setDoc, (e) => setError(String(e.message)));
+      .then((d) => setDoc(absolutize(d)), (e) => setError(String(e.message)));
   }, [id]);
   if (error) return <div className="sn-fullmsg">{error}</div>;
   if (!doc) return <div className="sn-fullmsg">Loading…</div>;
@@ -64,9 +65,9 @@ export function ObjectInspector({ id }: { id: string }) {
   return (
     <main className="sn-inspect">
       <nav className="sn-doc-nav">
-        <a href="/" className="sn-logo">Snoopery</a>
-        <a href="/rooms">Rooms</a>
-        <a href="/studio">Make a room</a>
+        <a href={href('/')} className="sn-logo">Snoopery</a>
+        <a href={href('/rooms')}>Rooms</a>
+        <a href={href('/studio')}>Make a room</a>
       </nav>
       <h1>{doc.label}</h1>
       <p className="sn-muted">

@@ -5,6 +5,17 @@ export const ASSET_BASE = (import.meta.env.VITE_ASSET_BASE as string | undefined
 
 export const docUrl = (key: string) => `${ASSET_BASE}/docs/${key}.json`;
 
+/**
+ * The static mirror stores asset links relative to the page ("./baked/…"). Workers inside the viewer would resolve
+ * those against their own script URL, so every relative link is made absolute before a document is used.
+ */
+export function absolutize<T>(value: T): T {
+  if (typeof value === 'string') return (value.startsWith('./') ? new URL(value, document.baseURI).href : value) as T;
+  if (Array.isArray(value)) return value.map(absolutize) as T;
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, absolutize(v)])) as T;
+  return value;
+}
+
 /** Published rooms are static JSON next to their assets, so playing never depends on the API being up. */
 const ROOM_ID = /^[A-Za-z0-9_-]{4,40}$/;
 
@@ -14,7 +25,7 @@ export async function loadRoom(id: string): Promise<RoomDoc> {
   if (!ROOM_ID.test(slug)) throw new Error('This room link is not valid.');
   const res = await fetch(dev ? `/dev/${encodeURIComponent(dev)}.json` : docUrl(`rooms/${encodeURIComponent(slug)}`), { cache: 'no-cache' });
   if (!res.ok) throw new Error(res.status === 404 ? 'This room does not exist (or was never published).' : `Could not load the room (HTTP ${res.status}).`);
-  const doc = parseRoomDoc(await res.json());
+  const doc = parseRoomDoc(absolutize(await res.json()));
   if (doc.id !== id) throw new Error('This room link is not valid.');
   return doc;
 }

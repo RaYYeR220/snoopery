@@ -5,6 +5,7 @@ import { api } from '../lib/api';
 import { JobCard } from './JobCard';
 import { uploadFile } from './upload';
 import { IDENTITY, Z_UP_TO_Y_UP, type DesignResult, type DraftLocal, type Library, type ObjectDoc, type Placement, type SpaceDoc } from './types';
+import { href } from '../lib/nav';
 
 type Step = 'space' | 'furniture' | 'place' | 'puzzle';
 const STEPS: { id: Step; label: string }[] = [
@@ -111,7 +112,7 @@ export function Studio() {
   return (
     <div className="sn-studio">
       <nav className="sn-studio-nav">
-        <a href="/" className="sn-logo">Snoopery</a>
+        <a href={href('/')} className="sn-logo">Snoopery</a>
         <ol>
           {STEPS.map((s, i) => (
             <li key={s.id}>

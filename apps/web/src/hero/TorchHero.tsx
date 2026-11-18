@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { loadRoomPoints, TorchScene } from './torch';
 import type { Lang } from '../lib/i18n';
+import { href, publicUrl } from '../lib/nav';
 
 const COPY = {
   en: {
@@ -74,7 +75,7 @@ export function TorchHero({ lang, onLang }: { lang: Lang; onLang: (l: Lang) => v
     });
     scene.attach(hero.current);
     let alive = true;
-    loadRoomPoints('/hero/room.bin')
+    loadRoomPoints(publicUrl('hero/room.bin'))
       .then((room) => alive && scene.setRoom(room))
       .catch(() => undefined);
     requestAnimationFrame(() => setReady(true));
@@ -95,7 +96,7 @@ export function TorchHero({ lang, onLang }: { lang: Lang; onLang: (l: Lang) => v
       </div>
       <header className="th-nav">
         <div className="th-wrap">
-          <a className="th-brand" href="/" aria-label="Snoopery home">
+          <a className="th-brand" href={href('/')} aria-label="Snoopery home">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <circle cx="10" cy="10" r="8.3" stroke="#f2f1ee" strokeWidth="1.3" />
               <circle cx="12.4" cy="8" r="3.4" fill="#c5f04e" />
@@ -104,8 +105,8 @@ export function TorchHero({ lang, onLang }: { lang: Lang; onLang: (l: Lang) => v
           </a>
           <nav className="th-links" aria-label="Primary">
             <a href="#how">{t.nav[0]}</a>
-            <a href="/rooms">{t.nav[1]}</a>
-            <a href="/docs">{t.nav[2]}</a>
+            <a href={href('/rooms')}>{t.nav[1]}</a>
+            <a href={href('/docs')}>{t.nav[2]}</a>
           </nav>
           <div className="th-lang" role="group" aria-label="Language">
             <button type="button" aria-pressed={lang === 'en'} onClick={() => onLang('en')}>
@@ -115,7 +116,7 @@ export function TorchHero({ lang, onLang }: { lang: Lang; onLang: (l: Lang) => v
               中文
             </button>
           </div>
-          <a className="th-nav-cta" href="/studio">
+          <a className="th-nav-cta" href={href('/studio')}>
             {t.make}
           </a>
         </div>
@@ -127,13 +128,13 @@ export function TorchHero({ lang, onLang }: { lang: Lang; onLang: (l: Lang) => v
         </h1>
         <p className="th-sub th-reveal th-d2">{t.sub}</p>
         <div className="th-ctas th-reveal th-d3">
-          <a className="th-btn" href="/rooms">
+          <a className="th-btn" href={href('/rooms')}>
             <span>{t.play}</span>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
               <path d="M2 7h9.5M7.5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.3" />
             </svg>
           </a>
-          <a className="th-ghost" href="/studio">
+          <a className="th-ghost" href={href('/studio')}>
             {t.mine}
           </a>
         </div>

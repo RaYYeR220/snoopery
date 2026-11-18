@@ -1,10 +1,13 @@
 // Runs one furniture photo through every Lux3D step we depend on and records latency, output kinds and file structure.
-// Usage: tsx scripts/pilot.ts <photo path|url> "<motion prompt>"
+// Usage: tsx scripts/pilot.ts <photo path|url> "<motion prompt>" [--resume g1=<taskId>,key=<taskId>]
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { createAholo, parseLux3dOutputs, type AholoCall, type Lux3dKind } from '../src/index';
 
-const [input, motion = 'Keep the body fixed. The top drawer slides straight out about 30 cm and back.'] = process.argv.slice(2);
+const argv = process.argv.slice(2);
+const resumeAt = argv.indexOf('--resume');
+const resume = resumeAt >= 0 ? Object.fromEntries(argv.splice(resumeAt, 2)[1]!.split(',').map((kv) => kv.split('='))) as Record<string, string> : {};
+const [input, motion = 'Keep the body fixed. The top drawer slides straight out about 30 cm and back.'] = argv;
 const apiKey = process.env.AHOLO_API_KEY;
 if (!input || !apiKey) {
   console.error('usage: AHOLO_API_KEY=... pilot.ts <photo> "<motion prompt>"');
@@ -21,8 +24,19 @@ const save = () => writeFileSync(join(outDir, 'report.json'), JSON.stringify({ .
 
 async function wait(kind: Lux3dKind, label: string, taskId: string, timeoutMs = 20 * 60_000) {
   const t0 = Date.now();
+  let misses = 0;
   for (;;) {
-    const r = await aholo.task(taskId);
+    let r: Awaited<ReturnType<typeof aholo.task>>;
+    try {
+      r = await aholo.task(taskId);
+      misses = 0;
+    } catch (e) {
+      // A dropped poll is not a failed task: the job keeps running server-side.
+      if (++misses > 10) throw e;
+      console.warn(`[${label}] poll failed (${misses}): ${String((e as Error).message)}`);
+      await new Promise((res) => setTimeout(res, 8000));
+      continue;
+    }
     if (r.status === 3 || r.status === 4 || r.status === 6) {
       const parsed = parseLux3dOutputs(kind, r.outputs);
       steps[label] = { taskId, status: r.status, seconds: Math.round((Date.now() - t0) / 1000), raw: r.outputs, parsed };
@@ -51,17 +65,17 @@ async function main() {
   report.img = img;
 
   const [turboId, g1Id, keyId] = await Promise.all([
-    aholo.imgTo3d({ img, turbo: true }),
-    aholo.imgTo3d({ img, turbo: false, ply: true, faceCount: 40000, aiPredictSize: true }),
-    aholo.textTo3d({ prompt: 'A small antique brass key with an ornate bow', turbo: true }),
+    resume.turbo ?? (resume.g1 ? undefined : aholo.imgTo3d({ img, turbo: true })),
+    resume.g1 ?? aholo.imgTo3d({ img, turbo: false, ply: true, faceCount: 40000, aiPredictSize: true }),
+    resume.key ?? aholo.textTo3d({ prompt: 'A small antique brass key with an ornate bow', turbo: true }),
   ]);
 
   const [turbo, g1, key] = await Promise.all([
-    wait('imgTo3d', 'turbo', turboId),
+    turboId ? wait('imgTo3d', 'turbo', turboId) : undefined,
     wait('imgTo3d', 'g1', g1Id),
     wait('textTo3d', 'key', keyId),
   ]);
-  await Promise.all([download('turbo', turbo.ply), download('g1', g1.glb), download('g1-zip', g1.zip), download('key', key.glb ?? key.url)]);
+  await Promise.all([download('turbo', turbo?.ply), download('g1', g1.glb), download('g1-zip', g1.zip), download('key', key.glb ?? key.url)]);
   if (!g1.glb) throw new Error('G1 produced no GLB');
 
   // Articulation on the fused mesh and part split run in parallel; then articulation on the split result.

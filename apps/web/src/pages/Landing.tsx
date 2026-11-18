@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { TorchHero } from '../hero/TorchHero';
 import { dict, useLang } from '../lib/i18n';
+import { href } from '../lib/nav';
 
 
 /** The landing page; the hero is swappable so the art direction can change without touching the rest. */
@@ -42,7 +43,7 @@ export function Landing({ hero }: { hero?: ReactNode }) {
       <section className="sn-band">
         <h2>{d.robotTitle}</h2>
         <p className="sn-muted">{d.robotText}</p>
-        <a className="sn-cta-ghost" href="/docs">{d.robotLink}</a>
+        <a className="sn-cta-ghost" href={href('/docs')}>{d.robotLink}</a>
       </section>
 
       <section className="sn-band sn-built">
@@ -57,9 +58,9 @@ export function Landing({ hero }: { hero?: ReactNode }) {
       </section>
 
       <footer className="sn-footer">
-        <a href="/rooms">{d.rooms}</a>
-        <a href="/studio">{d.make}</a>
-        <a href="/docs">{d.devs}</a>
+        <a href={href('/rooms')}>{d.rooms}</a>
+        <a href={href('/studio')}>{d.make}</a>
+        <a href={href('/docs')}>{d.devs}</a>
       </footer>
     </main>
   );
