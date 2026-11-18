@@ -1,5 +1,5 @@
 import type { StepDef, StepResult } from './engine';
-import { lux3dStep, mirror, out, type PipelineCtx } from './context';
+import { handoff, lux3dStep, mirror, out, type PipelineCtx } from './context';
 
 /** A scanned or generated space a room can be built in. */
 export interface SpaceDoc {
@@ -35,7 +35,7 @@ export const spaceSteps: StepDef<PipelineCtx>[] = [
       if (!media) return { state: 'done', output: {} };
       const ext = videoUrl ? (videoUrl.toLowerCase().includes('.mov') ? 'mov' : videoUrl.toLowerCase().includes('.insv') ? 'insv' : 'mp4') : 'jpg';
       const url = media.startsWith(ctx.blobs.publicUrl('')) ? media : (await ctx.blobs.putFromUrl(`spaces/${job.input.spaceId}/source.${ext}`, media)).url;
-      return { state: 'done', output: { url, ext } };
+      return { state: 'done', output: { url, ext, holo: await handoff(ctx, url, `source.${ext}`) } };
     },
   },
   {
@@ -46,11 +46,11 @@ export const spaceSteps: StepDef<PipelineCtx>[] = [
       const ref = job.input.videoUrl
         ? await ctx.aholo.reconstruct({
             name: job.input.title,
-            ...(src.ext === 'insv' ? { insv: src.url } : { video: src.url }),
+            ...(src.ext === 'insv' ? { insv: src.holo ?? src.url } : { video: src.holo ?? src.url }),
             scene: 'space',
             quality: job.input.quality ?? 'high',
           })
-        : await ctx.aholo.generateWorld({ prompt: job.input.prompt, image: src.url });
+        : await ctx.aholo.generateWorld({ prompt: job.input.prompt, image: src.holo ?? src.url });
       return { state: 'running', ref };
     },
     poll: (ctx, ref) => pollWorld(ctx, ref),
@@ -126,20 +126,26 @@ export const characterSteps: StepDef<PipelineCtx>[] = [
     'textTo3d',
     [],
     (ctx, job) => ctx.aholo.textTo3d({ prompt: job.input.prompt, style: job.input.style, faceCount: 40000 }),
-    async (ctx, job, o) => ({ glb: await mirror(ctx, `characters/${job.input.characterId}/model.glb`, o.glb ?? o.url) }),
+    async (ctx, job, o) => {
+      const glb = await mirror(ctx, `characters/${job.input.characterId}/model.glb`, o.glb ?? o.url);
+      return { glb, holo: glb ? await handoff(ctx, glb, 'model.glb') : undefined };
+    },
   ),
   lux3dStep(
     'rig',
     'rig',
     ['model'],
-    (ctx, job) => ctx.aholo.rig(out(job, 'model').glb),
-    async (ctx, job, o) => ({ glb: await mirror(ctx, `characters/${job.input.characterId}/rig.glb`, o.glb ?? o.url) }),
+    (ctx, job) => ctx.aholo.rig(out(job, 'model').holo ?? out(job, 'model').glb),
+    async (ctx, job, o) => {
+      const glb = await mirror(ctx, `characters/${job.input.characterId}/rig.glb`, o.glb ?? o.url);
+      return { glb, holo: glb ? await handoff(ctx, glb, 'rig.glb') : undefined };
+    },
   ),
   lux3dStep(
     'clips',
     'retarget',
     ['rig'],
-    (ctx, job) => ctx.aholo.retarget(out(job, 'rig').glb, ctx.config.characterClips),
+    (ctx, job) => ctx.aholo.retarget(out(job, 'rig').holo ?? out(job, 'rig').glb, ctx.config.characterClips),
     async (ctx, job, o) => {
       const clips: Record<string, string> = {};
       for (const [name, url] of Object.entries(o.actions ?? {})) {

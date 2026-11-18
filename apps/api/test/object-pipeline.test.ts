@@ -12,8 +12,10 @@ function fakeAholo(opts: { articulateZip?: boolean; articulateFails?: boolean } 
   const tasks = new Map<string, { kind: string; polls: number }>();
   let n = 0;
   const started: string[] = [];
-  const mk = (kind: string) => async () => {
+  const inputs: string[] = [];
+  const mk = (kind: string) => async (input?: unknown) => {
     started.push(kind);
+    if (typeof input === 'string') inputs.push(input);
     const id = `t${++n}`;
     tasks.set(id, { kind, polls: 0 });
     return id;
@@ -25,7 +27,8 @@ function fakeAholo(opts: { articulateZip?: boolean; articulateFails?: boolean } 
     articulate: [{ content: opts.articulateZip ? 'https://aholo.cdn/art.zip' : 'https://aholo.cdn/art.glb' }],
   };
   const aholo: Partial<Aholo> = {
-    imgTo3d: async (o) => mk(o.turbo ? 'turbo' : 'g1')(),
+    imgTo3d: async (o) => mk(o.turbo ? 'turbo' : 'g1')(o.img),
+    upload: async (_bytes, filename) => `https://holo.test/${filename}`,
     partSplit: mk('split'),
     articulate: mk('articulate'),
     task: async (id) => {
@@ -36,7 +39,7 @@ function fakeAholo(opts: { articulateZip?: boolean; articulateFails?: boolean } 
       return { status: 3, outputs: outputs[t.kind]! };
     },
   };
-  return { aholo: aholo as Aholo, started };
+  return { aholo: aholo as Aholo, started, inputs };
 }
 
 function ctxWith(aholo: Aholo, articulateFrom: 'split' | 'mesh' = 'split'): PipelineCtx {
@@ -67,7 +70,7 @@ async function runToEnd(ctx: PipelineCtx, max = 20) {
 
 describe('object pipeline', () => {
   it('turns a photo into a published object with joints and mirrored assets', async () => {
-    const { aholo, started } = fakeAholo();
+    const { aholo, started, inputs } = fakeAholo();
     const ctx = ctxWith(aholo);
     await submit(ctx, 'object', { objectId: 'o1', photoUrl: 'https://phone/dresser.jpg' });
     await runToEnd(ctx);
@@ -76,6 +79,8 @@ describe('object pipeline', () => {
     expect(doc!.webGlb).toBe('https://blobs.test/objects/o1/web.glb');
     expect(doc!.previewPly).toBe('https://blobs.test/objects/o1/preview.ply');
     expect(started).toEqual(['turbo', 'g1', 'split', 'articulate']);
+    // Aholo only ever receives files from its own storage, never links into our bucket.
+    expect(inputs).toEqual(['https://holo.test/photo.jpg', 'https://holo.test/photo.jpg', 'https://holo.test/mesh.glb', 'https://holo.test/parts.glb']);
   });
 
   it('extracts the GLB when articulation returns an archive', async () => {

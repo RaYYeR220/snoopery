@@ -1,6 +1,6 @@
 import { unzipSync } from 'fflate';
 import type { StepDef } from './engine';
-import { lux3dStep, mirror, out, type PipelineCtx } from './context';
+import { handoff, lux3dStep, mirror, out, type PipelineCtx } from './context';
 
 export interface ObjectDoc {
   id: string;
@@ -39,7 +39,7 @@ export const objectSteps: StepDef<PipelineCtx>[] = [
     run: async (ctx, job) => {
       const src = job.input.photoUrl as string;
       const url = src.startsWith(ctx.blobs.publicUrl('')) ? src : (await ctx.blobs.putFromUrl(key(job.input.objectId, 'photo.jpg'), src)).url;
-      return { state: 'done', output: { photo: url } };
+      return { state: 'done', output: { photo: url, holo: await handoff(ctx, url, 'photo.jpg') } };
     },
   },
   {
@@ -54,26 +54,29 @@ export const objectSteps: StepDef<PipelineCtx>[] = [
     'preview',
     'imgTo3d',
     ['photo'],
-    (ctx, job) => ctx.aholo.imgTo3d({ img: out(job, 'photo').photo, turbo: true }),
+    (ctx, job) => ctx.aholo.imgTo3d({ img: out(job, 'photo').holo ?? out(job, 'photo').photo, turbo: true }),
     async (ctx, job, o) => ({ ply: await mirror(ctx, key(job.input.objectId, 'preview.ply'), o.ply) }),
   ),
   lux3dStep(
     'mesh',
     'imgTo3d',
     ['photo'],
-    (ctx, job) => ctx.aholo.imgTo3d({ img: out(job, 'photo').photo, turbo: false, faceCount: ctx.config.faceCount, aiPredictSize: true }),
+    (ctx, job) => ctx.aholo.imgTo3d({ img: out(job, 'photo').holo ?? out(job, 'photo').photo, turbo: false, faceCount: ctx.config.faceCount, aiPredictSize: true }),
     async (ctx, job, o) => {
       const glb = await mirror(ctx, key(job.input.objectId, 'mesh.glb'), o.glb);
       if (!glb) throw new Error('image-to-3D returned no GLB');
-      return { glb, zip: await mirror(ctx, key(job.input.objectId, 'mesh.zip'), o.zip) };
+      return { glb, zip: await mirror(ctx, key(job.input.objectId, 'mesh.zip'), o.zip), holo: await handoff(ctx, glb, 'mesh.glb') };
     },
   ),
   lux3dStep(
     'split',
     'partSplit',
     ['mesh'],
-    (ctx, job) => ctx.aholo.partSplit(out(job, 'mesh').glb),
-    async (ctx, job, o) => ({ glb: await mirror(ctx, key(job.input.objectId, 'parts.glb'), o.glb ?? o.url) }),
+    (ctx, job) => ctx.aholo.partSplit(out(job, 'mesh').holo ?? out(job, 'mesh').glb),
+    async (ctx, job, o) => {
+      const glb = await mirror(ctx, key(job.input.objectId, 'parts.glb'), o.glb ?? o.url);
+      return { glb, holo: glb ? await handoff(ctx, glb, 'parts.glb') : undefined };
+    },
     { enabled: (_job, ctx) => ctx.config.articulateFrom === 'split' },
   ),
   lux3dStep(
@@ -81,7 +84,9 @@ export const objectSteps: StepDef<PipelineCtx>[] = [
     'articulate',
     ['mesh', 'split', 'describe'],
     (ctx, job) => {
-      const from = out(job, 'split').glb ?? out(job, 'mesh').glb;
+      const split = out(job, 'split');
+      const mesh = out(job, 'mesh');
+      const from = split.holo ?? split.glb ?? mesh.holo ?? mesh.glb;
       return ctx.aholo.articulate(from, out(job, 'describe').motionPrompt);
     },
     async (ctx, job, o) => {

@@ -57,6 +57,14 @@ export function lux3dStep(
   };
 }
 
+/**
+ * Aholo's workers fetch inputs from inside mainland China, where our bucket is not reliably reachable, so every
+ * file a task consumes is first copied into Aholo's own asset storage.
+ */
+export async function handoff(ctx: PipelineCtx, url: string, filename: string): Promise<string> {
+  return ctx.aholo.upload(await ctx.blobs.getBytes(url), filename);
+}
+
 export async function mirror(ctx: PipelineCtx, key: string, url: string | undefined): Promise<string | undefined> {
   if (!url) return undefined;
   return (await ctx.blobs.putFromUrl(key, url)).url;
