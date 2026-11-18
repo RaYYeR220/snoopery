@@ -73,6 +73,7 @@ function rotate([x, y, z, w]: Q, [vx, vy, vz]: V3): V3 {
 }
 
 const MOVING = new Set(['revolute', 'continuous', 'prismatic']);
+const MAX_SWING = (110 * Math.PI) / 180;
 
 /** [rest, fully open] from URDF limits. */
 export function openRange(lower: number, upper: number): [number, number] {
@@ -150,6 +151,11 @@ export async function assembleUrdfPackage(zip: Uint8Array): Promise<Articulated>
       notes.push(`${j.child}: travel raised from ${(max * 100).toFixed(1)} cm to ${(travel * 100).toFixed(0)} cm (30% of the ${(depth * 100).toFixed(0)} cm carcass)`);
       min = 0;
       max = travel;
+    }
+    if (j.type !== 'prismatic' && Math.abs(max - min) > MAX_SWING) {
+      // A lid or door that swings past ~110° ends up hanging upside down; real ones stop against their hinge.
+      notes.push(`${j.child}: swing capped at 110° (Lux3D returned ${Math.round((Math.abs(max - min) * 180) / Math.PI)}°)`);
+      max = min + Math.sign(max - min) * MAX_SWING;
     }
     joints.push({ part: j.child, node: j.child, type: j.type === 'prismatic' ? 'prismatic' : 'revolute', axis, pivot: j.xyz, min, max });
   }
