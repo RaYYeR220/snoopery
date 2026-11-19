@@ -29,10 +29,14 @@ if (!roomIds.length) throw new Error('no rooms: pass --rooms a,b or --api <url>'
 const assets = new Map<string, string>(); // source URL → path under out/
 const foreign = new Set<string>();
 
+// Raw generation outputs that no page renders (the full splat preview, archives, pre-optimisation meshes) stay
+// as links to the bucket instead of being copied.
+const RAW = /\/(preview\.ply|mesh\.zip|parts\.glb|articulated\.glb|articulation-urdf\.zip|source\.[a-z0-9]+)$/;
+
 /** Rewrites every link into our bucket to "./baked/<path>" and remembers it for download. */
 function relink<T>(value: T): T {
   if (typeof value === 'string') {
-    if (value.startsWith(`${source}/`)) {
+    if (value.startsWith(`${source}/`) && !RAW.test(value)) {
       const path = decodeURIComponent(new URL(value).pathname.slice(new URL(source).pathname.length + 1));
       assets.set(value, path);
       return `./baked/${path}` as T;
